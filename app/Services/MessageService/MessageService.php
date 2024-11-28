@@ -2,104 +2,463 @@
 
 namespace App\Services\MessageService;
 
-use App\Models\TelegramUser;
-use Illuminate\Support\Collection;
+use App\Models\Order;
+use App\Models\OrderStep;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\FileUpload\InputFile;
 use Telegram\Bot\Keyboard\Keyboard;
+use Telegram\Bot\Objects\CallbackQuery;
+use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\Update;
+use Telegram\Bot\Objects\User;
 
 class MessageService
 {
     protected Api $telegram;
-    protected MessagesConfig $messages;
-
+    protected Update $response;
+    protected ?CallbackQuery $callbackQuery;
+    protected ?Message $message;
+    protected ?User $telegramUser;
+    protected ?int $messageId;
+    protected ?int $chatId;
+    protected ?string $key;
+    protected bool $send = false;
+    public ?Order $order = null;
+    public ?OrderStep $lastStep = null;
+    public const DEFAULT_KEY = 'start';
     public function __construct()
     {
         $this->telegram = new Api();
-        $this->messages = new MessagesConfig();
+        $this->response = $this->telegram->getWebhookUpdate();
+
+        $this->callbackQuery = $this->response->callbackQuery;
+        $this->telegramUser = $this->callbackQuery?->from ?? $this->response->message?->from;
+        $this->message = $this->response->message ?? $this->callbackQuery->message;
+        $this->messageId = $this->message->messageId;
+        $this->chatId = $this->message->chat->id;
+        $this->key = $this->callbackQuery?->data ?? $this->message->text;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSendMethod(): string
+    {
+        $method = explode(':', trim($this->key, '/'))[0];
+        $method = method_exists(self::class, $method) ? $method : null;
+
+        $method = $method ?? explode(':', $this->lastStep?->current_key ?? '')[0];
+        return method_exists(self::class, $method) ? $method : self::DEFAULT_KEY;
     }
 
     /**
      * @throws TelegramSDKException
      */
-    public function receive(Update $response): static
+    public function receive(): static
     {
-        $message = $response->getMessage();
-        $key = $message->get('text');
-        $chat = $response->getChat();
-        $chat_id = $chat->get('id');
+        $this->order = Order::getOrder($this->telegramUser);
+        $this->setLastStep();
+        $method = $this->getSendMethod();
+        call_user_func([static::class, $method]);
 
-        $params = $this->messages->config( $key . '.params', '/start.params');
-        $method = $this->messages->config( $key . '.method', '/start.method');
-        $args = array_merge(compact('chat_id'), $params ?? []);
+        $this->callbackQuery && $this->telegram->answerCallbackQuery(['callback_query_id' => $this->callbackQuery->id]);
 
-        if (method_exists(Api::class, $method)) {
-            call_user_func([$this->telegram, $method], $args);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setLastStep(): static
+    {
+        $this->lastStep = $this->order->getLastStep();
+
+        return $this;
+    }
+
+    /**
+     * @param int $chat_id
+     * @param int $message_id
+     * @param Keyboard|null $reply_markup
+     * @param string|null $text
+     * @return void
+     * @throws TelegramSDKException
+     */
+    public function sendOrEdit(int $chat_id, int $message_id, ?Keyboard $reply_markup, ?string $text = ''): void
+    {
+        if (!$this->callbackQuery || !$reply_markup) {
+            $this->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
+        } else {
+            $text && $this->telegram->editMessageText(compact('chat_id','message_id', 'text'));
+            $this->telegram->editMessageReplyMarkup(compact('chat_id','message_id', 'reply_markup'));
+        }
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function getSelectedOptionName(): mixed
+    {
+        $keyBoards = Arr::flatten($this->message->replyMarkup?->inline_keyboard ?? [],1);
+        $keyBoard = collect($keyBoards)->where('callback_data', $this->key)->first();
+        return $keyBoard['text'] ?? '';
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function start(): static
+    {
+        $chat_id = $this->chatId;
+        $photo = InputFile::create(Storage::disk('public')->path('avatar-black.png'));
+        $caption = trans('telegram.message.start');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.individuals'), 'callback_data' => 'individuals'],
+                ['text' => trans('telegram.button.legal_entities'), 'callback_data' => 'legal_entities'],
+            ]
+        ]]);
+        $this->order->steps()->delete();
+        $this->telegram->sendPhoto(compact('chat_id', 'photo', 'caption', 'reply_markup'));
+
+        return $this;
+    }
+
+    public function getBackKey()
+    {
+
+    }
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function individuals(): static
+    {
+        $chat_id = $this->chatId;
+        $text = trans('telegram.message.services');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.currency_exchange'), 'callback_data' => 'currency_exchange'],
+                ['text' =>  trans('telegram.button.crypto_exchange'), 'callback_data' => 'crypto_exchange'],
+            ], [
+                ['text' =>  trans('telegram.button.international_transfers'), 'callback_data' => 'international_transfers'],
+            ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.start'), $this->getSelectedOptionName());
+        $this->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function legal_entities(): static {
+        $chat_id = $this->chatId;
+        $text = trans('telegram.message.services');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.payment_invoices'), 'callback_data' => 'payment_invoices'],
+                ['text' => trans('telegram.button.business_relocation'), 'callback_data' => 'business_relocation'],
+            ], [
+                ['text' => trans('telegram.button.payment_agency_agreement'), 'callback_data' => 'payment_agency_agreement'],
+            ], [
+                ['text' => trans('telegram.button.return_foreign_currency_revenue'), 'callback_data' => 'return_foreign_currency_revenue'],
+            ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.start'), $this->getSelectedOptionName());
+        $this->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
+
+        return $this;
+    }
+
+    public function cart(): static {
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.amount'),  $this->message->text);
+        $this->order->load('steps');
+
+        $text = "Ваша заявка \n";
+        $text .= $this->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
+
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.checkout'), 'callback_data' => 'checkout'],
+            ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function checkout(): static {
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $this->order->checkout()->load('steps');
+
+        $text = "Ваша заявка подтверждена ждите ответа оператора";
+        $this->sendOrEdit($chat_id, $message_id, null, $text);
+
+        $text = "Заявка \n";
+        $text .= $this->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.completed'), 'callback_data' => 'completed'],
+            ]
+        ]]);
+        $this->telegram->sendMessage([
+            'chat_id' => '-4588641921',
+            'text' => $text,
+            'reply_markup' => $reply_markup,
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function currency_exchange(): static
+    {
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = trans('telegram.message.service_type');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.buy'), 'callback_data' => 'city'],
+                ['text' =>  trans('telegram.button.sell'), 'callback_data' => 'city'],
+            ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.services'), $this->getSelectedOptionName());
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function city(): static
+    {
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = trans('telegram.message.city');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.moscow'), 'callback_data' => 'sell_buy_currency:moscow'],
+                ['text' =>  trans('telegram.button.sevastopol'), 'callback_data' => 'sell_buy_currency:sevastopol'],
+            ], [
+                ['text' => trans('telegram.button.simferopol'), 'callback_data' => 'sell_buy_currency:simferopol'],
+            ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.service_type'), $this->getSelectedOptionName());
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function sell_buy_currency(): static
+    {
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = trans('telegram.message.currency');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.usd'), 'callback_data' => 'sell_buy_usd'],
+                ['text' =>  trans('telegram.button.eur'), 'callback_data' => 'amount'],
+                ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => 'custom_currency'],
+            ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.city'),  $this->getSelectedOptionName());
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function custom_currency(): static
+    {
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = trans('telegram.message.custom_currency');
+
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+
+        if ($this->lastStep->key == 'custom_currency') {
+            $this->lastStep->update(['value' => trans('telegram.button.custom_currency') . ': ' . $this->message->text]);
+            $this->currency_amount();
+        } else {
+            $this->order->syncSteps(__FUNCTION__, trans('telegram.order.currency_type'),  $this->getSelectedOptionName());
+            $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
         }
 
         return $this;
     }
 
     /**
-     * @param Update $response
      * @return $this
      * @throws TelegramSDKException
      */
-    public function start(Update $response): static
+    public function sell_buy_usd(): static
     {
-        $chat = $response->getChat();
-        $chatId = $chat->get('id');
-        $message = $response->getMessage();
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = trans('telegram.message.currency_type');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.old_usd_banknote'), 'callback_data' => 'currency_amount:old_usd_banknote'],
+            ], [
+                ['text' =>  trans('telegram.button.new_usd_banknote'), 'callback_data' => 'currency_amount:new_usd_banknote'],
+            ],[
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
 
-//        $this->telegram->deleteMessage([
-//            'chat_id' => $chatId,
-//            'message_id' => $message->get('message_id')
-//        ]);
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.currency'),  $this->getSelectedOptionName());
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
 
+        return $this;
+    }
 
-        $this->telegram->sendPhoto([
-            'chat_id' => $chatId,
-            'photo' => InputFile::create(Storage::disk('public')->path('avatar-black.png')),
-            'caption' => "Thank you for joining us. We hope you enjoyed it!",
-            'reply_markup' => new Keyboard(['inline_keyboard' => [
-                [
-                    ['text' => '1', 'callback_data' => 'cb_btn'],
-//                    ['text' => '2 🔗', 'url' => 'https://www.google.com'],
-//                    ['text' => '3 🔗', 'url' => 'https://www.google.com'],
-                ]
-            ]]),
-        ]);
+    public function currency_amount(): static {
+        if ($this->lastStep->key == 'currency_amount') {
+            if (!is_numeric($this->message->text)) {
+                $text = trans('telegram.errors.not_numeric');
+            } elseif ($this->message->text < 1000) {
+                $text = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
+            } else {
+                return $this->cart();
+            }
+        }
 
-        TelegramUser::makeNew($message->toArray());
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = $text ?? trans('telegram.message.amount');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.currency_type'),  $this->getSelectedOptionName());
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
 
         return $this;
     }
 
     /**
-     * @param int $chatId
      * @return $this
      * @throws TelegramSDKException
      */
-    public function answer(Update $response): static
+    public function crypto_exchange(): static
     {
-        $chat = $response->getChat();
-        $chatId = $chat->get('id');
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = trans('telegram.message.service_type');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.buy'), 'callback_data' => 'crypto_type'],
+                ['text' =>  trans('telegram.button.sell'), 'callback_data' => 'crypto_type'],
 
-        $this->telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => "Thank you for joining us. We hope you enjoyed it! Keyboard",
-            'reply_markup' => new Keyboard(['inline_keyboard' => [
-                [
-                    ['text' => '1 🔗', 'url' => 'https://www.google.com'],
-                    ['text' => '2 🔗', 'url' => 'https://www.google.com'],
-                    ['text' => '3 🔗', 'url' => 'https://www.google.com'],
-                ]
-            ]]),
+            ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.service_type'), $this->getSelectedOptionName());
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
 
-        ]);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function crypto_type(): static
+    {
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = trans('telegram.message.crypto_type');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.btc'), 'callback_data' => 'crypto_amount'],
+                ['text' =>  trans('telegram.button.eth'), 'callback_data' => 'crypto_amount'],
+                ['text' =>  trans('telegram.button.usdt'), 'callback_data' => 'crypto_amount'],
+
+            ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.services'), $this->getSelectedOptionName());
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function crypto_amount(): static
+    {
+        if ($this->lastStep->key == 'crypto_amount') {
+            if (!is_numeric($this->message->text)) {
+                $text = trans('telegram.errors.not_numeric');
+            } elseif ($this->message->text < 1000) {
+                $text = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
+            } else {
+                return $this->city();
+            }
+        }
+
+        $chat_id = $this->chatId;
+        $message_id = $this->messageId;
+        $text = $text ?? trans('telegram.message.amount');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->lastStep?->prev_key ?? 'start'],
+            ]
+        ]]);
+        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.currency_type'),  $this->getSelectedOptionName());
+        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
 
         return $this;
     }

@@ -21,9 +21,7 @@ class TelegramController extends Controller
      */
     public function webhook()
     {
-        $response = $this->telegram->getWebhookUpdate();
-
-        resolve('message')->receive($response);
+        resolve('message')->receive();
     }
 
     /**

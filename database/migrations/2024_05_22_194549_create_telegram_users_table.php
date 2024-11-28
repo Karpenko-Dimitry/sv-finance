@@ -15,13 +15,14 @@ return new class extends Migration
     {
         Schema::create('telegram_users', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('user_id')->nullable();
             $table->boolean('is_bot')->default(false);
             $table->string('first_name')->nullable();
             $table->string('username')->nullable();
             $table->string('language_code', 50)->nullable();
             $table->timestamps();
             $table->softDeletes();
+            $table->index(['user_id']);
         });
 
         Schema::create('chats', function (Blueprint $table) {

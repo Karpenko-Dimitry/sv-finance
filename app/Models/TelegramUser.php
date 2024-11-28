@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * App\Models\TelegramUser
  *
  * @property int $id
- * @property int|null $user_id
+ * @property string|null $user_id
  * @property bool $is_bot
  * @property string|null $first_name
  * @property string|null $username
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Chat> $chats
  * @property-read int|null $chats_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
+ * @property-read int|null $orders_count
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser onlyTrashed()
@@ -53,6 +56,14 @@ class TelegramUser extends Model
     /**
      * @return HasMany
      */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class)->orderByDesc('created_at');
+    }
+
+    /**
+     * @return HasMany
+     */
     public function chats(): HasMany
     {
         return $this->hasMany(Chat::class, 'telegram_user_id');
@@ -64,13 +75,11 @@ class TelegramUser extends Model
      */
     public static function makeNew(array $attributes): Model|TelegramUser|bool|null
     {
-        $from = $attributes['from'] ?? null;
-
-        if ($from) {
-            $data = collect($from)->only([
+        if (!$attributes['is_bot']) {
+            $data = collect($attributes)->only([
                 'is_bot', 'first_name', 'username', 'language_code'
             ])->merge([
-                'user_id' => $attributes['from']['id'] ?? null
+                'user_id' => $attributes['id'] ?? null
             ])->toArray();
 
             $resource = self::updateOrCreate(['user_id' => $data['user_id']], $data);

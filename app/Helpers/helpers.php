@@ -4,10 +4,12 @@ if (!function_exists('log_debug')) {
     /**
      * @param $message
      * @param array $context
+     * @param string|null $chanel
+     * @return void
      */
-    function log_debug($message, array $context = []): void
+    function log_debug($message, array $context = [], ?string $chanel = 'debug'): void
     {
-        logger()->debug(
+        logger()->channel($chanel)->debug(
             is_string($message) ? $message : json_pretty($message),
             $context
         );
