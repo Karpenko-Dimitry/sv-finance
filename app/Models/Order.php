@@ -83,9 +83,12 @@ class Order extends Model
     {
         /** @var OrderStep $existingStep */
         $prev_key = resolve('message')->lastStep?->current_key ?? 'start';
-        $existingStep = $this->steps()->where('current_key', $current_key)->first();
-        $existingStep && $this->steps()->where('id', '>', $existingStep->id)->delete();
-        !$existingStep && $this->steps()->create(compact('current_key', 'prev_key', 'name', 'value'));
+        if ($existingStep = $this->steps()->where('current_key', $current_key)->first()) {
+            resolve('message')->setLastStep($existingStep);
+            $this->steps()->where('id', '>', $existingStep->id)->delete();
+        } else {
+            $this->steps()->create(compact('current_key', 'prev_key', 'name', 'value'));
+        }
 
         return $this;
     }
