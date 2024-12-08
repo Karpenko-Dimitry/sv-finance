@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $user_id
  * @property bool $is_bot
  * @property string|null $first_name
+ * @property string|null $last_name
  * @property string|null $username
  * @property string|null $language_code
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereIsBot($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereLanguageCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereLastName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereUsername($value)
@@ -46,7 +48,7 @@ class TelegramUser extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'is_bot', 'first_name', 'username', 'language_code'
+        'user_id', 'is_bot', 'first_name', 'last_name', 'username', 'language_code'
     ];
 
     protected $casts = [
@@ -77,7 +79,7 @@ class TelegramUser extends Model
     {
         if (!$attributes['is_bot']) {
             $data = collect($attributes)->only([
-                'is_bot', 'first_name', 'username', 'language_code'
+                'is_bot', 'first_name', 'last_name', 'username', 'language_code'
             ])->merge([
                 'user_id' => $attributes['id'] ?? null
             ])->toArray();

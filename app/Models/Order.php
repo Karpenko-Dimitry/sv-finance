@@ -17,6 +17,7 @@ use Telegram\Bot\Objects\User as TelegramBotUser;
  * @property int $id
  * @property int $telegram_user_id
  * @property string $status
+ * @property array|null $file_ids
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Collection<int, \App\Models\OrderStep> $steps
@@ -25,6 +26,7 @@ use Telegram\Bot\Objects\User as TelegramBotUser;
  * @method static Builder|Order newQuery()
  * @method static Builder|Order query()
  * @method static Builder|Order whereCreatedAt($value)
+ * @method static Builder|Order whereFileIds($value)
  * @method static Builder|Order whereId($value)
  * @method static Builder|Order whereStatus($value)
  * @method static Builder|Order whereTelegramUserId($value)
@@ -33,13 +35,21 @@ use Telegram\Bot\Objects\User as TelegramBotUser;
  */
 class Order extends Model
 {
-    const STATUS_PENDING = 'pending';
+    const STATUS_WAITING = 'waiting';
     const STATUS_PROCESSING = 'processing';
     const STATUS_CANCELLED = 'cancelled';
     const STATUS_COMPLETED = 'completed';
+    const TYPE_INDIVIDUALS = 'individuals';
+    const TYPE_LEGAL_ENTITIES = 'legal_entities';
+    const FILE_TYPE_DOOCUMENT = 'document';
+    const FILE_TYPE_PHOTO = 'photo';
 
     protected $fillable = [
-        'status', 'telegram_user_id'
+        'type', 'status', 'telegram_user_id', 'file_ids'
+    ];
+
+    protected $casts = [
+        'file_ids' => 'array'
     ];
 
     /**
@@ -55,8 +65,9 @@ class Order extends Model
     {
         $user_id = $telegramUser->id;
         $telegramUser = TelegramUser::where(compact('user_id'))->first() ?? TelegramUser::makeNew($telegramUser->toArray());
-        return $telegramUser->orders()->with(['steps'])->where('status', self::STATUS_PENDING)->first()
-            ?? $telegramUser->orders()->create(['status' => self::STATUS_PENDING]);
+        resolve('message')->setLocalTelegramUser($telegramUser);
+        return $telegramUser->orders()->with(['steps'])->where('status', self::STATUS_WAITING)->first()
+            ?? $telegramUser->orders()->create(['status' => self::STATUS_WAITING]);
     }
 
     /**
@@ -86,6 +97,7 @@ class Order extends Model
         if ($existingStep = $this->steps()->where('current_key', $current_key)->first()) {
             resolve('message')->setLastStep($existingStep);
             $this->steps()->where('id', '>', $existingStep->id)->delete();
+            !$existingStep->value && $existingStep->update(compact('value'));
         } else {
             $this->steps()->create(compact('current_key', 'prev_key', 'name', 'value'));
         }
@@ -125,7 +137,7 @@ class Order extends Model
         }
 
         /** @var Order $order */
-        $order = $telegramUser->orders()->where('status', self::STATUS_PENDING)->first() ?? $telegramUser->orders()->create();
+        $order = $telegramUser->orders()->where('status', self::STATUS_WAITING)->first() ?? $telegramUser->orders()->create();
 
         if ($key == MessageService::DEFAULT_KEY) {
             $order->steps()->delete();

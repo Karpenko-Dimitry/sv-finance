@@ -17,7 +17,9 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('telegram_user_id');
-            $table->string('status')->default(Order::STATUS_PENDING);
+            $table->string('type')->nullable();
+            $table->string('status')->default(Order::STATUS_WAITING);
+            $table->json('file_ids')->nullable();
             $table->timestamps();
             $table->foreign('telegram_user_id')->references('id')->on('telegram_users')->onDelete('cascade');
         });

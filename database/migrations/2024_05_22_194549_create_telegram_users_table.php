@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('user_id')->nullable();
             $table->boolean('is_bot')->default(false);
             $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
             $table->string('username')->nullable();
             $table->string('language_code', 50)->nullable();
             $table->timestamps();
