@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\MessageService\Actions\Home;
 use App\Services\MessageService\MessageService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -125,7 +126,7 @@ class Order extends Model
     {
         $key = trim($key, '/');
         $name = $name ?? $message->text ?? $message->caption ?? '';
-
+        $messageService = resolve('message');
         $keyBoards = Arr::flatten($message->replyMarkup?->inline_keyboard ?? [],1);
         $keyBoard = collect($keyBoards)->where('callback_data', $key)->first();
         $value = $keyBoard['text'] ?? $message->text ?? $message->caption ?? '';
@@ -139,7 +140,7 @@ class Order extends Model
         /** @var Order $order */
         $order = $telegramUser->orders()->where('status', self::STATUS_WAITING)->first() ?? $telegramUser->orders()->create();
 
-        if ($key == MessageService::DEFAULT_KEY) {
+        if ($key == $messageService->defaultKey) {
             $order->steps()->delete();
         } else {
             /** @var OrderStep $existingStep */

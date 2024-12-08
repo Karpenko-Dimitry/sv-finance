@@ -28,3 +28,31 @@ if (!function_exists('json_pretty')) {
         return json_encode($value, $options + JSON_PRETTY_PRINT, $depth);
     }
 }
+
+if (!function_exists('get_objects_in_directory')) {
+    /**
+     * @param $path
+     * @param $namespace
+     * @return array
+     */
+    function get_objects_in_directory($path, $namespace): array
+    {
+        $files = scandir($path);
+        $objects = [];
+        foreach($files as $file) {
+            if ('.' === $file || '..' === $file) {
+                continue;
+            }
+
+            $classname = pathinfo(basename($file), PATHINFO_FILENAME);
+
+            if (class_exists($namespace . $classname)) {
+                $object = resolve($namespace . $classname);
+
+                $objects[] = $object;
+            }
+        }
+
+        return $objects;
+    }
+}

@@ -5,6 +5,8 @@ namespace App\Services\MessageService;
 use App\Models\Order;
 use App\Models\OrderStep;
 use App\Models\TelegramUser;
+use App\Services\Exceptions\AlreadyRegisteredActionException;
+use App\Services\MessageService\Actions\Home;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Telegram\Bot\Api;
@@ -30,21 +32,61 @@ class MessageService
     protected bool $send = false;
     public ?Order $order = null;
     public ?OrderStep $lastStep = null;
-    public const DEFAULT_KEY = 'start';
+    public string $defaultKey;
+
+    public static array $actions = [];
 
     public function __construct()
     {
         $this->telegram = new Api();
         $this->response = $this->telegram->getWebhookUpdate();
-
+        $this->defaultKey = (new Home())->getActionKey('start');
         $this->callbackQuery = $this->response->callbackQuery;
         $this->telegramUser = $this->callbackQuery?->from ?? $this->response->message?->from;
-        $this->message = $this->response->message ?? $this->callbackQuery->message;
-        $this->messageId = $this->message->messageId;
-        $this->chatId = $this->message->chat->id;
-        $this->key = $this->callbackQuery?->data ?? $this->message->text;
+        $this->message = $this->response->message ?? $this->callbackQuery?->message;
+        $this->messageId = $this->message?->messageId;
+        $this->chatId = $this->message?->chat?->id;
+        $this->key = $this->callbackQuery?->data ?? $this->message?->text;
     }
 
+    /**
+     * @throws AlreadyRegisteredActionException
+     */
+    public static function setActions(array $actions = [], bool $append = true): array
+    {
+        if (!$append) {
+            self::$actions = [];
+        }
+
+        /** @var AbstractAction $action */
+        foreach ($actions as $action) {
+            self::addAction($action);
+        }
+
+        return self::getActions();
+    }
+
+    public static function getActions(): array
+    {
+        return self::$actions;
+    }
+
+    public static function addAction(AbstractAction $action): AbstractAction
+    {
+        if (isset(self::$actions[$action->getName()])) {
+            throw new AlreadyRegisteredActionException(sprintf(
+                "Action %s already registered",
+                $action->getName()
+            ));
+        }
+
+        return self::$actions[$action->getName()] = $action;
+    }
+
+    public static function getAction(string $name): ?AbstractAction
+    {
+        return self::$actions[$name] ?? null;
+    }
     /**
      * @param TelegramUser $telegramUser
      * @return void
@@ -55,25 +97,44 @@ class MessageService
     }
 
     /**
-     * @return string
+     * @return bool
      */
-    public function getSendMethod(): string
+    public function execute(): bool
     {
+        return $this->executeByKey($this->key) || $this->executeByKey($this->lastStep?->current_key ?? '')
+            || $this->executeByKey($this->defaultKey);
+    }
+
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function executeByKey(string $key): bool
+    {
+        $homeAction = self::getAction('home');
         $mapping = [
-            trans('telegram.button.home') => 'start',
-            trans('telegram.button.individuals') => 'individuals',
-            trans('telegram.button.legal_entities') => 'legal_entities',
-            '/home' => 'start',
-            '/individuals' => 'individuals',
-            '/legalentities' => 'legal_entities',
+            trans('telegram.button.home') => $homeAction->getActionKey('start'),
+            trans('telegram.button.individuals') => $homeAction->getActionKey('individuals'),
+            trans('telegram.button.legal_entities') => $homeAction->getActionKey('legal_entities'),
+            '/home' =>  $homeAction->getActionKey('start'),
+            '/individuals' =>  $homeAction->getActionKey('individuals'),
+            '/legalentities' =>  $homeAction->getActionKey('legal_entities'),
         ];
 
         $key = $mapping[$this->key] ?? $this->key;
-        $method = explode(':', trim($key, '/'))[0];
-        $method = method_exists(self::class, $method) ? $method : null;
+        $keyArray = explode('@', $key);
+        $actionName = $keyArray[0] ?? '';
+        $action = self::getAction($actionName);
+        $actionClass = $action ? get_class($action) : null;
+        $methodName = explode(':', trim($keyArray[1] ?? '', '/'))[0];
 
-        $method = $method ?? explode(':', $this->lastStep?->current_key ?? '')[0];
-        return method_exists(self::class, $method) ? $method : self::DEFAULT_KEY;
+        log_debug('test', compact('actionClass', 'methodName'));
+        if (method_exists($actionClass, $methodName)) {
+            $action->{$methodName}();
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -94,10 +155,9 @@ class MessageService
     {
         $this->order = Order::getOrder($this->telegramUser);
         $this->setLastStep();
-        $method = $this->getSendMethod();
+        log_debug('test111');
 
-        call_user_func([static::class, $method]);
-
+        $this->execute();
         $this->callbackQuery && $this->telegram->answerCallbackQuery(['callback_query_id' => $this->callbackQuery->id]);
 
         return $this;

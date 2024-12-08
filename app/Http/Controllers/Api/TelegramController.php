@@ -21,6 +21,8 @@ class TelegramController extends Controller
      */
     public function webhook()
     {
+        log_debug('test0000');
+
         resolve('message')->receive();
     }
 

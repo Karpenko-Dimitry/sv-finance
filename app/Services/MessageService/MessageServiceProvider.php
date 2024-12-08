@@ -2,6 +2,7 @@
 
 namespace App\Services\MessageService;
 
+use App\Services\Exceptions\AlreadyRegisteredActionException;
 use Illuminate\Support\ServiceProvider;
 
 class MessageServiceProvider extends ServiceProvider
@@ -19,12 +20,14 @@ class MessageServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap services.
-     *
      * @return void
+     * @throws AlreadyRegisteredActionException
      */
     public function boot()
     {
-        //
+        MessageService::setActions(get_objects_in_directory(
+            app_path('Services/MessageService/Actions'),
+            'App\\Services\\MessageService\\Actions\\'
+        ), false);
     }
 }
