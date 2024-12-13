@@ -63,7 +63,7 @@ class Home extends AbstractAction
             ], [
                 ['text' =>  trans('telegram.button.sailor_services'), 'callback_data' => (new SailorServices())->getActionKey()],
             ], [
-                ['text' =>  trans('telegram.button.financial_consulting'), 'callback_data' => 'financial_consulting'],
+                ['text' =>  trans('telegram.button.financial_consulting'), 'callback_data' => (new FinancialConsulting())->getActionKey()],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
