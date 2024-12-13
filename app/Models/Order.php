@@ -79,12 +79,6 @@ class Order extends Model
         return $this->steps->first();
     }
 
-    public function getSecondStep(): OrderStep|null
-    {
-        $secondStep = $this->steps->skip(1)->first();
-        return $secondStep?->first();
-    }
-
     /**
      * @param string $current_key
      * @param string $name
@@ -93,10 +87,12 @@ class Order extends Model
      */
     public function syncSteps(string $current_key, string $name, string $value): static
     {
+        $current_key = explode(':', $current_key)[0] ?? '';
+        $messageService = resolve('message');
         /** @var OrderStep $existingStep */
-        $prev_key = resolve('message')->lastStep?->current_key ?? 'start';
+        $prev_key = resolve('message')->lastStep?->current_key ?? $messageService->defaultKey;
         if ($existingStep = $this->steps()->where('current_key', $current_key)->first()) {
-            resolve('message')->setLastStep($existingStep);
+            $messageService->setLastStep($existingStep);
             $this->steps()->where('id', '>', $existingStep->id)->delete();
             !$existingStep->value && $existingStep->update(compact('value'));
         } else {
@@ -147,8 +143,6 @@ class Order extends Model
             $existingStep = $order->steps()->where('key', $key)->first();
             $existingStep && $order->steps()->where('id', '>', $existingStep->id)->delete();
             !$existingStep && $order->steps()->create(compact('key', 'name', 'value'));
-
-            log_debug('test', compact('existingStep', 'key'));
         }
 
         return $order;

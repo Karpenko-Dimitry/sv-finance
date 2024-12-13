@@ -7,9 +7,9 @@ use App\Services\MessageService\AbstractAction;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\Keyboard\Keyboard;
 
-class CryptoExchange extends AbstractAction
+class InternationalCacheTransferToRf extends AbstractAction
 {
-    protected ?string $name = 'crypto_exchange';
+    protected ?string $name = "international_cache_transfer_to_rf";
 
     /**
      * @return $this
@@ -17,21 +17,24 @@ class CryptoExchange extends AbstractAction
      */
     public function start(): static
     {
-        $chat_id = $this->messageService->chatId;
-        $message_id = $this->messageService->messageId;
-        $text = trans('telegram.crypto_exchange.message.service_type');
+        if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
+            if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
+                $text = trans('telegram.errors.str_length');
+            } else {
+                return $this->currency();
+            }
+        }
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.service_type'),
+            trans('telegram.international_cache_transfer_to_rf.order.direction'),
             $this->messageService->getSelectedOptionName()
         );
 
+        $chat_id = $this->messageService->chatId;
+        $message_id = $this->messageService->messageId;
+        $text = $text ?? trans('telegram.international_cache_transfer_to_rf.message.country');
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.button.buy'), 'callback_data' => $this->getActionKey('crypto_type')],
-                ['text' =>  trans('telegram.button.sell'), 'callback_data' => $this->getActionKey('crypto_type')],
-
-            ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
         ]]);
@@ -44,24 +47,55 @@ class CryptoExchange extends AbstractAction
      * @return $this
      * @throws TelegramSDKException
      */
-    public function crypto_type(): static
+    public function currency(): static
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.crypto_exchange.message.currency_type');
+        $text = trans('telegram.international_cache_transfer_to_rf.message.currency');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.services'),
+            trans('telegram.international_cache_transfer_to_rf.order.country'),
             $this->messageService->getSelectedOptionName()
         );
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.crypto_exchange.button.btc'), 'callback_data' => $this->getActionKey('amount')],
-                ['text' =>  trans('telegram.crypto_exchange.button.eth'), 'callback_data' => $this->getActionKey('amount')],
-                ['text' =>  trans('telegram.crypto_exchange.button.usdt'), 'callback_data' => $this->getActionKey('amount')],
-
+                ['text' => trans('telegram.button.usd'), 'callback_data' => $this->getActionKey('amount')],
+                ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('amount')],
+                ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('custom_currency')],
             ], [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
+            ]
+        ]]);
+
+        $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function custom_currency(): static
+    {
+        if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
+            if (strlen($this->messageService->message->text) < 3) {
+                $text = trans('telegram.errors.str_length');
+            } else {
+                return $this->amount();
+            }
+        }
+        $this->messageService->order->syncSteps(
+            $this->getActionKey(__FUNCTION__),
+            trans('telegram.international_cache_transfer_to_rf.order.country'),
+            $this->messageService->getSelectedOptionName()
+        );
+        $chat_id = $this->messageService->chatId;
+        $message_id = $this->messageService->messageId;
+        $text = $text ?? trans('telegram.international_cache_transfer_to_rf.message.custom_currency');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
         ]]);
@@ -81,17 +115,17 @@ class CryptoExchange extends AbstractAction
             } elseif ($this->messageService->message->text < 1000) {
                 $text = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
             } else {
-                return $this->pay_type();
+                return $this->recipient_city();
             }
         }
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.currency_type'),
+            trans('telegram.international_cache_transfer_to_rf.order.currency'),
             $this->messageService->getSelectedOptionName()
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.crypto_exchange.message.amount');
+        $text = $text ?? trans('telegram.international_cache_transfer_to_rf.message.amount');
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -106,54 +140,24 @@ class CryptoExchange extends AbstractAction
      * @return $this
      * @throws TelegramSDKException
      */
-    public function pay_type(): static
+    public function recipient_city(): static
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.crypto_exchange.message.pay_type');
+        $text = trans('telegram.international_cache_transfer_to_rf.message.recipient_city');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.amount'),
-            $this->messageService->message->text
-        );
-
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.crypto_exchange.button.cash'), 'callback_data' => $this->getActionKey('city')],
-                ['text' => trans('telegram.crypto_exchange.button.card'), 'callback_data' => $this->getActionKey('bank')],
-
-            ], [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
-            ]
-        ]]);
-
-        $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     * @throws TelegramSDKException
-     */
-    public function city(): static
-    {
-        $chat_id = $this->messageService->chatId;
-        $message_id = $this->messageService->messageId;
-        $text = trans('telegram.message.city');
-        $this->messageService->order->syncSteps(
-            $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.pay_type'),
+            trans('telegram.international_cache_transfer_to_rf.order.amount'),
             $this->messageService->getSelectedOptionName()
         );
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.button.moscow'), 'callback_data' => $this->getActionKey('currency_type')],
-                ['text' =>  trans('telegram.button.sevastopol'), 'callback_data' => $this->getActionKey('currency_type')],
+                ['text' => trans('telegram.button.moscow'), 'callback_data' => $this->getActionKey('recipient_amount')],
+                ['text' =>  trans('telegram.button.sevastopol'), 'callback_data' => $this->getActionKey('recipient_amount')],
             ], [
-                ['text' => trans('telegram.button.simferopol'), 'callback_data' => $this->getActionKey('currency_type')],
-                ['text' => trans('telegram.button.custom_city'), 'callback_data' => $this->getActionKey('custom_city')],
+                ['text' => trans('telegram.button.simferopol'), 'callback_data' => $this->getActionKey('recipient_amount')],
+                ['text' => trans('telegram.button.custom_city'), 'callback_data' => $this->getActionKey('recipient_custom_city')],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
@@ -168,23 +172,24 @@ class CryptoExchange extends AbstractAction
      * @return $this
      * @throws TelegramSDKException
      */
-    public function custom_city(): static
+    public function recipient_custom_city(): static
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
                 $text = trans('telegram.errors.str_length');
             } else {
-                return $this->currency_type();
+                return $this->recipient_amount();
             }
         }
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.city'),
-            trans('telegram.crypto_exchange.order.custom_city'),        );
+            trans('telegram.international_cache_transfer_to_rf.order.amount'),
+            $this->messageService->getSelectedOptionName()
+        );
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.crypto_exchange.message.custom_city');
+        $text = $text ?? trans('telegram.international_cache_transfer_to_rf.message.recipient_custom_city');
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -199,22 +204,54 @@ class CryptoExchange extends AbstractAction
      * @return $this
      * @throws TelegramSDKException
      */
-    public function currency_type(): static
+    public function recipient_amount(): static {
+        if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
+            if (!is_numeric($this->messageService->message->text)) {
+                $text = trans('telegram.errors.not_numeric');
+            } elseif ($this->messageService->message->text < 1000) {
+                $text = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
+            } else {
+                return $this->recipient_currency();
+            }
+        }
+        $this->messageService->order->syncSteps(
+            $this->getActionKey(__FUNCTION__),
+            trans('telegram.international_cache_transfer_to_rf.order.recipient_city'),
+            $this->messageService->getSelectedOptionName()
+        );
+        $chat_id = $this->messageService->chatId;
+        $message_id = $this->messageService->messageId;
+        $text = $text ?? trans('telegram.international_cache_transfer_to_rf.message.recipient_amount');
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
+            ]
+        ]]);
+        $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws TelegramSDKException
+     */
+    public function recipient_currency(): static
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.message.crypto_currency_type');
+        $text = trans('telegram.international_cache_transfer_to_rf.message.recipient_currency');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.city'),
+            trans('telegram.international_cache_transfer_to_rf.order.recipient_amount'),
             $this->messageService->getSelectedOptionName()
         );
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.usd'), 'callback_data' => $this->getActionKey('cart')],
-                ['text' => trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('cart')],
-                ['text' => trans('telegram.button.rub'), 'callback_data' => $this->getActionKey('cart')],
+                ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('cart')],
+                ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('recipient_custom_currency')],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
@@ -229,27 +266,28 @@ class CryptoExchange extends AbstractAction
      * @return $this
      * @throws TelegramSDKException
      */
-    public function bank(): static
+    public function recipient_custom_currency(): static
     {
-        $chat_id = $this->messageService->chatId;
-        $message_id = $this->messageService->messageId;
-        $text = trans('telegram.crypto_exchange.message.bank');
+        if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
+            if (strlen($this->messageService->message->text) < 3) {
+                $text = trans('telegram.errors.str_length');
+            } else {
+                return $this->cart();
+            }
+        }
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.pay_type'),
+            trans('telegram.international_cache_transfer_to_rf.order.recipient_amount'),
             $this->messageService->getSelectedOptionName()
         );
-
+        $chat_id = $this->messageService->chatId;
+        $message_id = $this->messageService->messageId;
+        $text = $text ?? trans('telegram.international_cache_transfer_to_rf.message.recipient_currency');
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.crypto_exchange.button.sberbank'), 'callback_data' => $this->getActionKey('cart')],
-                ['text' => trans('telegram.crypto_exchange.button.tbank'), 'callback_data' => $this->getActionKey('cart')],
-                ['text' => trans('telegram.crypto_exchange.button.rnkb'), 'callback_data' => $this->getActionKey('cart')],
-            ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
         ]]);
-
         $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
 
         return $this;
@@ -262,17 +300,14 @@ class CryptoExchange extends AbstractAction
     public function cart(): static {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $key = $this->messageService->lastStep->current_key;
-        $key = explode('@', $key)[1];
-        $key = explode(':', $key)[0];
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.crypto_exchange.order.' .  $key),
+            trans('telegram.international_cache_transfer_to_rf.order.recipient_currency'),
             $this->messageService->getSelectedOptionName() ?: $this->messageService->message->text
         );
         $this->messageService->order->load('steps');
 
-        $text = trans('telegram.crypto_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n";
+        $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n";
         $text .=  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
             ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
 
