@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string $prev_key
  * @property string $name
  * @property string|null $value
+ * @property mixed|null $form_data
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read \App\Models\Order $order
@@ -24,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder|OrderStep query()
  * @method static Builder|OrderStep whereCreatedAt($value)
  * @method static Builder|OrderStep whereCurrentKey($value)
+ * @method static Builder|OrderStep whereFormData($value)
  * @method static Builder|OrderStep whereId($value)
  * @method static Builder|OrderStep whereName($value)
  * @method static Builder|OrderStep whereOrderId($value)
@@ -35,7 +37,11 @@ use Illuminate\Support\Carbon;
 class OrderStep extends Model
 {
     protected $fillable = [
-        'order_id', 'current_key', 'prev_key', 'name', 'value'
+        'order_id', 'current_key', 'prev_key', 'name', 'value', 'form_data'
+    ];
+
+    protected $casts = [
+        'form_data' => 'array',
     ];
 
     /**

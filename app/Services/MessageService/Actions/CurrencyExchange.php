@@ -20,12 +20,16 @@ class CurrencyExchange extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.currency_exchange.message.service_type');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.currency_exchange.order.services'),
             $this->messageService->getSelectedOptionName()
         );
+
+        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text .= trans('telegram.currency_exchange.message.service_type');
+
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -48,12 +52,15 @@ class CurrencyExchange extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.currency_exchange.message.city');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.currency_exchange.order.service_type'),
             $this->messageService->getSelectedOptionName()
         );
+
+        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text .= trans('telegram.currency_exchange.message.city');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -81,7 +88,7 @@ class CurrencyExchange extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->sell_buy();
             }
@@ -89,11 +96,15 @@ class CurrencyExchange extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.currency_exchange.order.city'),
-            trans('telegram.currency_exchange.order.custom_city'),        );
+            trans('telegram.currency_exchange.order.custom_city')
+        );
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.currency_exchange.message.custom_city');
+        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text .= trans('telegram.currency_exchange.message.custom_city');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -112,12 +123,15 @@ class CurrencyExchange extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.currency_exchange.message.currency');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.currency_exchange.order.city'),
             $this->messageService->getSelectedOptionName()
         );
+
+        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text .= trans('telegram.currency_exchange.message.currency');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -142,7 +156,7 @@ class CurrencyExchange extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->amount();
             }
@@ -154,7 +168,10 @@ class CurrencyExchange extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.message.custom_currency');
+        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text .= trans('telegram.message.custom_currency');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -173,12 +190,15 @@ class CurrencyExchange extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.currency_exchange.message.currency_type');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.currency_exchange.order.currency'),
             $this->messageService->getSelectedOptionName()
         );
+
+        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text .= trans('telegram.currency_exchange.message.currency_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -202,9 +222,9 @@ class CurrencyExchange extends AbstractAction
     public function amount(): static {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (!is_numeric($this->messageService->message->text)) {
-                $text = trans('telegram.errors.not_numeric');
+                $validationText = trans('telegram.errors.not_numeric');
             } elseif ($this->messageService->message->text < 1000) {
-                $text = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
+                $validationText = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
             } else {
                 return $this->cart();
             }
@@ -216,7 +236,10 @@ class CurrencyExchange extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.currency_exchange.message.amount');
+        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
+                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text .= trans('telegram.currency_exchange.message.amount');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -241,7 +264,7 @@ class CurrencyExchange extends AbstractAction
         );
         $this->messageService->order->load('steps');
 
-        $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n";
+        $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n\n";
         $text .=  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
             ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
 

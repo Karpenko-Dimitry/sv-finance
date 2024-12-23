@@ -24,8 +24,7 @@ class Checkout extends AbstractAction
         $text .= trans('telegram.checkout.name', ['name' => $this->messageService->localTelegramUser->first_name]) . "\n";
         $text .= trans('telegram.checkout.nickname', ['nickname' => $this->messageService->localTelegramUser->username]) . "\n";
         $caption = $text;
-        $text .= $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
+        $text .= $this->messageService->order->getStepsFormattedData();
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.completed'), 'callback_data' => 'completed'],

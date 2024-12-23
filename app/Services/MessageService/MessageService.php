@@ -116,6 +116,7 @@ class MessageService
             trans('telegram.button.individuals') => $homeAction->getActionKey('individuals'),
             trans('telegram.button.legal_entities') => $homeAction->getActionKey('legal_entities'),
             '/home' =>  $homeAction->getActionKey(),
+            '/start' =>  $homeAction->getActionKey(),
             '/individuals' =>  $homeAction->getActionKey('individuals'),
             '/legalentities' =>  $homeAction->getActionKey('legal_entities'),
         ];
@@ -153,7 +154,7 @@ class MessageService
      */
     public function receive(): static
     {
-        $this->order = Order::getOrder($this->telegramUser);
+        $this->order = Order::getOrder($this->telegramUser, $this->chatId);
         $this->setLastStep();
         $this->executeMessage();
         $this->callbackQuery && $this->telegram->answerCallbackQuery(['callback_query_id' => $this->callbackQuery->id]);
@@ -434,174 +435,6 @@ class MessageService
         ]]);
         $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
 
-        return $this;
-    }
-
-    /**
-     * @return $this|MessageService
-     * @throws TelegramSDKException
-     */
-    public function payment_invoices_purpose(): MessageService|static
-    {
-        if ($this->lastStep->current_key == __FUNCTION__) {
-            if (strlen($this->message->text) < 3 || strlen($this->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
-            } else {
-                return $this->payment_invoices_receipt_location();
-            }
-        }
-        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.services'),  $this->getSelectedOptionName());
-        $chat_id = $this->chatId;
-        $message_id = $this->messageId;
-        $text = $text ?? trans('telegram.message.payment_invoices_purpose');
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getBackKey(__FUNCTION__)],
-            ]
-        ]]);
-        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
-
-        return $this;
-    }
-
-    public function payment_invoices_receipt_location(): MessageService|static
-    {
-        if ($this->lastStep->current_key == __FUNCTION__) {
-            if (strlen($this->message->text) < 3 || strlen($this->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
-            } else {
-                return $this->payment_invoices_receipt_amount();
-            }
-        }
-        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.payment_invoices_purpose'),  $this->getSelectedOptionName());
-        $chat_id = $this->chatId;
-        $message_id = $this->messageId;
-        $text = $text ?? trans('telegram.message.payment_invoices_receipt_location');
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getBackKey(__FUNCTION__)],
-            ]
-        ]]);
-        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
-
-        return $this;
-    }
-
-    public function payment_invoices_receipt_amount(): static {
-        if ($this->lastStep->current_key == __FUNCTION__) {
-            if (!is_numeric($this->message->text)) {
-                $text = trans('telegram.errors.not_numeric');
-            } elseif ($this->message->text < 1000) {
-                $text = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
-            } else {
-                return $this->payment_invoices_receipt_currency();
-            }
-        }
-        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.payment_invoices_receipt_location'),  $this->getSelectedOptionName());
-        $chat_id = $this->chatId;
-        $message_id = $this->messageId;
-        $text = $text ?? trans('telegram.message.amount');
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getBackKey(__FUNCTION__)],
-            ]
-        ]]);
-        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
-
-        return $this;
-    }
-
-    public function payment_invoices_receipt_currency(): static
-    {
-        $chat_id = $this->chatId;
-        $message_id = $this->messageId;
-        $text = trans('telegram.message.currency');
-        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.amount'),  $this->message->text);
-
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.usd'), 'callback_data' => 'payment_invoices_city:usd'],
-                ['text' =>  trans('telegram.button.eur'), 'callback_data' => 'payment_invoices_city:eur'],
-                ['text' =>  trans('telegram.button.cny'), 'callback_data' => 'payment_invoices_city:cny'],
-                ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => 'payment_invoices_custom_currency'],
-            ], [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getBackKey(__FUNCTION__)],
-            ]
-        ]]);
-
-        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
-
-        return $this;
-    }
-
-    public function payment_invoices_custom_currency(): static
-    {
-        if ($this->lastStep->current_key == __FUNCTION__) {
-            if (strlen($this->message->text) < 3 || strlen($this->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
-            } else {
-                return $this->payment_invoices_city();
-            }
-        }
-        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.currency_type'),  $this->message->text);
-
-        $chat_id = $this->chatId;
-        $message_id = $this->messageId;
-        $text = $text ?? trans('telegram.message.custom_currency');
-
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getBackKey(__FUNCTION__)],
-            ]
-        ]]);
-
-        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
-
-        return $this;
-    }
-
-    public function payment_invoices_city(): static
-    {
-        $chat_id = $this->chatId;
-        $message_id = $this->messageId;
-        $text = trans('telegram.message.payment_invoices_city');
-        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.currency'), $this->getSelectedOptionName());
-
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.moscow'), 'callback_data' => 'payment_invoices_file:moscow'],
-                ['text' =>  trans('telegram.button.sevastopol'), 'callback_data' => 'payment_invoices_file:sevastopol'],
-            ], [
-                ['text' => trans('telegram.button.simferopol'), 'callback_data' => 'payment_invoices_file:simferopol'],
-            ], [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getBackKey(__FUNCTION__)],
-            ]
-        ]]);
-
-        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
-
-        return $this;
-    }
-
-    public function payment_invoices_file(): static
-    {
-        $chat_id = $this->chatId;
-        $message_id = $this->messageId;
-        $text = trans('telegram.message.payment_invoices_file');
-        $this->order->syncSteps(__FUNCTION__, trans('telegram.order.currency'), $this->getSelectedOptionName());
-
-        $result = $this->saveFiles();
-        $text = $result ? trans('telegram.message.success_file') : $text;
-
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.forward'), 'callback_data' => 'cart'],
-            ], [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getBackKey(__FUNCTION__)],
-            ]
-        ]]);
-
-        $this->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
         return $this;
     }
 

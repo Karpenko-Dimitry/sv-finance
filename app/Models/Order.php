@@ -17,6 +17,8 @@ use Telegram\Bot\Objects\User as TelegramBotUser;
  *
  * @property int $id
  * @property int $telegram_user_id
+ * @property int|null $chat_id
+ * @property string|null $type
  * @property string $status
  * @property array|null $file_ids
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -26,11 +28,13 @@ use Telegram\Bot\Objects\User as TelegramBotUser;
  * @method static Builder|Order newModelQuery()
  * @method static Builder|Order newQuery()
  * @method static Builder|Order query()
+ * @method static Builder|Order whereChatId($value)
  * @method static Builder|Order whereCreatedAt($value)
  * @method static Builder|Order whereFileIds($value)
  * @method static Builder|Order whereId($value)
  * @method static Builder|Order whereStatus($value)
  * @method static Builder|Order whereTelegramUserId($value)
+ * @method static Builder|Order whereType($value)
  * @method static Builder|Order whereUpdatedAt($value)
  * @mixin \Eloquent
  */
@@ -46,7 +50,7 @@ class Order extends Model
     const FILE_TYPE_PHOTO = 'photo';
 
     protected $fillable = [
-        'type', 'status', 'telegram_user_id', 'file_ids'
+        'type', 'status', 'telegram_user_id', 'file_ids', 'chat_id'
     ];
 
     protected $casts = [
@@ -61,11 +65,16 @@ class Order extends Model
         return $this->hasMany(OrderStep::class)->orderByDesc('created_at');
     }
 
-
-    public static function getOrder(TelegramBotUser $telegramUser)
+    public static function getOrder(TelegramBotUser $telegramUser, int $chatId)
     {
         $user_id = $telegramUser->id;
         $telegramUser = TelegramUser::where(compact('user_id'))->first() ?? TelegramUser::makeNew($telegramUser->toArray());
+        resolve('message')->setLocalTelegramUser($telegramUser);
+        return $telegramUser->orders()->with(['steps'])->where('chat_id', $chatId)->where('status', self::STATUS_WAITING)->first()
+            ?? $telegramUser->orders()->create(['status' => self::STATUS_WAITING, 'chat_id' => $chatId]);
+    }
+
+    public static function getOrderByLocalUser(TelegramUser $telegramUser) {
         resolve('message')->setLocalTelegramUser($telegramUser);
         return $telegramUser->orders()->with(['steps'])->where('status', self::STATUS_WAITING)->first()
             ?? $telegramUser->orders()->create(['status' => self::STATUS_WAITING]);
@@ -82,22 +91,33 @@ class Order extends Model
     /**
      * @param string $current_key
      * @param string $name
-     * @param string $value
+     * @param string|null $value
+     * @param array|null $form_data
+     * @param string|null $prev_key
      * @return $this
      */
-    public function syncSteps(string $current_key, string $name, string $value): static
+    public function syncSteps(string $current_key, string $name, ?string $value = null, ?array $form_data = null, ?string $prev_key = null): static
     {
         $current_key = explode(':', $current_key)[0] ?? '';
+
         $messageService = resolve('message');
         /** @var OrderStep $existingStep */
-        $prev_key = resolve('message')->lastStep?->current_key ?? $messageService->defaultKey;
+        $prev_key = $prev_key ?? resolve('message')->lastStep?->current_key ?? $messageService->defaultKey;
+
+        if (explode('@', $current_key)[0] == (new Home())->getName()) {
+            $this->steps()->delete();
+            $prev_key = (new Home())->getActionKeyWithoutPostfix();
+        }
+
         if ($existingStep = $this->steps()->where('current_key', $current_key)->first()) {
             $messageService->setLastStep($existingStep);
             $this->steps()->where('id', '>', $existingStep->id)->delete();
-            !$existingStep->value && $existingStep->update(compact('value'));
+
+            !$existingStep->value && !$existingStep->form_data && $existingStep->update(compact('value', 'form_data'));
         } else {
-            $this->steps()->create(compact('current_key', 'prev_key', 'name', 'value'));
+            $this->steps()->create(compact('current_key', 'prev_key', 'name', 'value', 'form_data'));
         }
+        $this->load('steps');
 
         return $this;
     }
@@ -146,5 +166,26 @@ class Order extends Model
         }
 
         return $order;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStepsFormattedData(): string
+    {
+        return $this->steps->filter(fn(OrderStep $step) => $step->value || $step->form_data)->sortBy('id')
+            ->map(function(OrderStep $step) {
+                $formData = collect($step->form_data ?? [])->filter(fn($item) => !is_null($item));
+                $result = $step->name . ' ' . $step->value . ($formData->count() ? "\n" : '');
+                $transKey = explode('@', $step->current_key)[0] ?? '';
+                $result .= $formData->map(function(array $item) use ($transKey) {
+                    $name = trans('telegram.' . $transKey . '.form.label.' . $item['name'] ?? '');
+                    $name = trim($name, ':');
+                    $value =  $item['value'] ?? '';
+
+                    return "$name: $value";
+                })->implode("\n");
+                return $result;
+            })->implode("\n");
     }
 }

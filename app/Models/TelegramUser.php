@@ -79,7 +79,7 @@ class TelegramUser extends Model
     {
         if (!$attributes['is_bot']) {
             $data = collect($attributes)->only([
-                'is_bot', 'first_name', 'last_name', 'username', 'language_code'
+                'is_bot', 'first_name', 'last_name', 'username', 'language_code',
             ])->merge([
                 'user_id' => $attributes['id'] ?? null
             ])->toArray();

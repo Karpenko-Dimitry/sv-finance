@@ -10,7 +10,8 @@
         "irazasyed/telegram-bot-sdk": "^3.14",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
-        "laravel/tinker": "^2.7"
+        "laravel/tinker": "^2.7",
+        "laravelcollective/html": "^6.4"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.15",

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\PaymentInvoiceFormController;
+use App\Http\Controllers\ReturnForeignCurrencyRevenueController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +15,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::resource('/payment-invoices', PaymentInvoiceFormController::class)->only(['create', 'store']);
+Route::resource('/return-foreign-currency-revenue', ReturnForeignCurrencyRevenueController::class)->only(['create', 'store']);

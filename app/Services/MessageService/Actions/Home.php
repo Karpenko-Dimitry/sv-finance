@@ -20,7 +20,7 @@ class Home extends AbstractAction
     public function start(): static
     {
         $chat_id = $this->messageService->chatId;
-        $photo = InputFile::create(Storage::disk('public')->path('avatar-black.png'));
+        $photo = InputFile::create(public_path('assets/img/avatar-black.png'));
         $caption = trans('telegram.message.start');
         $reply_markup = new Keyboard(
             [
@@ -46,11 +46,12 @@ class Home extends AbstractAction
     public function individuals(): static
     {
         $chat_id = $this->messageService->chatId;
+        $message_id = $this->messageService->messageId;
         $text = trans('telegram.message.services');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.order.start'),
-            $this->messageService->getSelectedOptionName()
+            trans('telegram.button.individuals')
         );
         $this->messageService->order->update(['type' => Order::TYPE_INDIVIDUALS]);
         $reply_markup = new Keyboard(['inline_keyboard' => [
@@ -65,9 +66,10 @@ class Home extends AbstractAction
             ], [
                 ['text' =>  trans('telegram.button.financial_consulting'), 'callback_data' => (new FinancialConsulting())->getActionKey()],
             ], [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getActionKeyWithoutPostfix()],
             ]
         ]]);
+
         $this->messageService->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
 
         return $this;
@@ -79,26 +81,28 @@ class Home extends AbstractAction
      */
     public function legal_entities(): static {
         $chat_id = $this->messageService->chatId;
+        $message_id = $this->messageService->messageId;
         $text = trans('telegram.message.services');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.order.start'),
-            $this->messageService->getSelectedOptionName()
+            trans('telegram.button.legal_entities')
         );
         $this->messageService->order->update(['type' => Order::TYPE_LEGAL_ENTITIES]);
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.button.payment_invoices'), 'callback_data' => 'payment_invoices_purpose'],
+                ['text' => trans('telegram.button.payment_invoices') , 'web_app' => ['url' => route('payment-invoices.create')]],
                 ['text' => trans('telegram.button.business_relocation'), 'callback_data' => 'business_relocation'],
             ], [
                 ['text' => trans('telegram.button.payment_agency_agreement'), 'callback_data' => 'payment_agency_agreement'],
             ], [
-                ['text' => trans('telegram.button.return_foreign_currency_revenue'), 'callback_data' => 'return_foreign_currency_revenue'],
+                ['text' => trans('telegram.button.return_foreign_currency_revenue'), 'web_app' => ['url' => route('return-foreign-currency-revenue.create')]],
             ], [
-                ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->getActionKeyWithoutPostfix()],
             ]
         ]]);
+
         $this->messageService->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
 
         return $this;
