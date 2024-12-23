@@ -26,8 +26,7 @@ class CurrencyExchange extends AbstractAction
             $this->messageService->getSelectedOptionName()
         );
 
-        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.currency_exchange.message.service_type');
 
 
@@ -58,8 +57,7 @@ class CurrencyExchange extends AbstractAction
             $this->messageService->getSelectedOptionName()
         );
 
-        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.currency_exchange.message.city');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
@@ -101,8 +99,7 @@ class CurrencyExchange extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.currency_exchange.message.custom_city');
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
@@ -129,8 +126,7 @@ class CurrencyExchange extends AbstractAction
             $this->messageService->getSelectedOptionName()
         );
 
-        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.currency_exchange.message.currency');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
@@ -168,8 +164,7 @@ class CurrencyExchange extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.message.custom_currency');
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
@@ -196,8 +191,7 @@ class CurrencyExchange extends AbstractAction
             $this->messageService->getSelectedOptionName()
         );
 
-        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.currency_exchange.message.currency_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
@@ -236,8 +230,7 @@ class CurrencyExchange extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text =  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-                ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n") . "\n\n";
+        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.currency_exchange.message.amount');
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
@@ -265,8 +258,7 @@ class CurrencyExchange extends AbstractAction
         $this->messageService->order->load('steps');
 
         $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n\n";
-        $text .=  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
+        $text .=  $this->messageService->order->getStepsFormattedData();
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

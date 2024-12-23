@@ -19,12 +19,13 @@ class FinancialConsultingRelocation extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.financial_consulting_relocation.message.relocation_type');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.financial_consulting_relocation.order.services_type'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.financial_consulting_relocation.message.relocation_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -49,7 +50,7 @@ class FinancialConsultingRelocation extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->cart();
             }
@@ -62,7 +63,9 @@ class FinancialConsultingRelocation extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.financial_consulting_relocation.message.country');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.financial_consulting_relocation.message.country');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -88,8 +91,7 @@ class FinancialConsultingRelocation extends AbstractAction
         $this->messageService->order->load('steps');
 
         $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n";
-        $text .=  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
+        $text .=  $this->messageService->order->getStepsFormattedData();
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

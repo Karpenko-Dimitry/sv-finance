@@ -19,7 +19,7 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->sender_amount();
             }
@@ -32,7 +32,9 @@ class InternationalSepaTransferToRf extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.international_sepa_transfer_to_rf.message.sender_country');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.sender_country');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -50,9 +52,9 @@ class InternationalSepaTransferToRf extends AbstractAction
     public function sender_amount(): static {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (!is_numeric($this->messageService->message->text)) {
-                $text = trans('telegram.errors.not_numeric');
+                $validationText = trans('telegram.errors.not_numeric');
             } elseif ($this->messageService->message->text < 1000) {
-                $text = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
+                $validationText = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
             } else {
                 return $this->sender_currency();
             }
@@ -64,7 +66,9 @@ class InternationalSepaTransferToRf extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.international_sepa_transfer_to_rf.message.sender_amount');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.sender_amount');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -83,12 +87,13 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.international_sepa_transfer_to_rf.message.sender_currency');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_sepa_transfer_to_rf.order.sender_amount'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.sender_currency');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -113,7 +118,7 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->transfer_type();
             }
@@ -125,7 +130,9 @@ class InternationalSepaTransferToRf extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.international_sepa_transfer_to_rf.message.sender_currency');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.sender_currency');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -144,12 +151,13 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.international_sepa_transfer_to_rf.message.transfer_type');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_sepa_transfer_to_rf.order.sender_currency'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.transfer_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -176,12 +184,13 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.international_sepa_transfer_to_rf.message.city_cash_transfer');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_sepa_transfer_to_rf.order.transfer_type'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.city_cash_transfer');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -208,7 +217,7 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->cart();
             }
@@ -221,7 +230,9 @@ class InternationalSepaTransferToRf extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.international_sepa_transfer_to_rf.message.city_cash_transfer');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.city_cash_transfer');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -250,8 +261,7 @@ class InternationalSepaTransferToRf extends AbstractAction
         $this->messageService->order->load('steps');
 
         $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n";
-        $text .=  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
+        $text .=  $this->messageService->order->getStepsFormattedData();
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -273,12 +283,13 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.international_sepa_transfer_to_rf.message.bank_transfer');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_sepa_transfer_to_rf.order.transfer_type'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.bank_transfer');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -305,7 +316,7 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->cart();
             }
@@ -318,7 +329,9 @@ class InternationalSepaTransferToRf extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.international_sepa_transfer_to_rf.message.bank_transfer');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.bank_transfer');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -333,7 +346,7 @@ class InternationalSepaTransferToRf extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->cart();
             }
@@ -346,7 +359,9 @@ class InternationalSepaTransferToRf extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.international_sepa_transfer_to_rf.message.custom_transfer');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_sepa_transfer_to_rf.message.custom_transfer');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],

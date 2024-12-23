@@ -37,7 +37,7 @@ use Illuminate\Support\Carbon;
 class OrderStep extends Model
 {
     protected $fillable = [
-        'order_id', 'current_key', 'prev_key', 'name', 'value', 'form_data'
+        'order_id', 'current_key', 'prev_key', 'name', 'value', 'form_data', 'message_id'
     ];
 
     protected $casts = [

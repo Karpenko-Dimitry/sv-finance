@@ -18,12 +18,13 @@ class FinancialConsulting extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.financial_consulting.message.service_type');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.financial_consulting.order.services'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.financial_consulting.message.service_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

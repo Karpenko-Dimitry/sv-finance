@@ -19,12 +19,13 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.sailor_services_accept_payment.message.pay_type');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.service_type'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.pay_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -49,12 +50,13 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.sailor_services_accept_payment.message.currency');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.pay_type'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.currency');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -79,7 +81,7 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->amount();
             }
@@ -91,7 +93,9 @@ class SailorServicesAcceptPayment extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.sailor_services_accept_payment.message.currency');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.currency');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -109,9 +113,9 @@ class SailorServicesAcceptPayment extends AbstractAction
     public function amount(): static {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (!is_numeric($this->messageService->message->text)) {
-                $text = trans('telegram.errors.not_numeric');
+                $validationText = trans('telegram.errors.not_numeric');
             } elseif ($this->messageService->message->text < 1000) {
-                $text = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
+                $validationText = trans('telegram.errors.invalid_amount', ['amount' => 1000]);
             } else {
                 return $this->transfer_type();
             }
@@ -123,7 +127,9 @@ class SailorServicesAcceptPayment extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.sailor_services_accept_payment.message.amount');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.amount');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -142,12 +148,13 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.sailor_services_accept_payment.message.transfer_type');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.amount'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.transfer_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -173,12 +180,13 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.sailor_services_accept_payment.message.city_transfer');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.transfer_type'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.city_transfer');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -205,7 +213,7 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->recipient_currency();
             }
@@ -218,7 +226,9 @@ class SailorServicesAcceptPayment extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.sailor_services_accept_payment.message.city_transfer');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.city_transfer');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -247,8 +257,7 @@ class SailorServicesAcceptPayment extends AbstractAction
         $this->messageService->order->load('steps');
 
         $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n";
-        $text .=  $this->messageService->order->steps->filter(fn(OrderStep $step) => $step->value)->sortBy('id')
-            ->map(fn (OrderStep $step) => $step->name . ' ' . $step->value)->implode("\n");
+        $text .=  $this->messageService->order->getStepsFormattedData();
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -270,7 +279,7 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->recipient_currency();
             }
@@ -283,7 +292,9 @@ class SailorServicesAcceptPayment extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.sailor_services_accept_payment.message.transfer_type');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.transfer_type');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -302,7 +313,7 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->currency();
             }
@@ -315,7 +326,9 @@ class SailorServicesAcceptPayment extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.sailor_services_accept_payment.message.pay_type');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.pay_type');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -334,7 +347,6 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.sailor_services_accept_payment.message.recipient_currency');
         $key = $this->messageService->lastStep->current_key;
         $key = explode('@', $key)[1];
         $key = explode(':', $key)[0];
@@ -343,6 +355,8 @@ class SailorServicesAcceptPayment extends AbstractAction
             trans('telegram.sailor_services_accept_payment.order.' . $key),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.recipient_currency');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -367,7 +381,7 @@ class SailorServicesAcceptPayment extends AbstractAction
     {
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3) {
-                $text = trans('telegram.errors.str_length');
+                $validationText = trans('telegram.errors.str_length');
             } else {
                 return $this->cart();
             }
@@ -379,7 +393,9 @@ class SailorServicesAcceptPayment extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = $text ?? trans('telegram.sailor_services_accept_payment.message.recipient_currency');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.sailor_services_accept_payment.message.recipient_currency');
+        $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],

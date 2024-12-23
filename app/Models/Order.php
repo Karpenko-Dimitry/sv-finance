@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Arr;
+use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\User as TelegramBotUser;
 
@@ -95,14 +96,18 @@ class Order extends Model
      * @param array|null $form_data
      * @param string|null $prev_key
      * @return $this
+     * @throws TelegramSDKException
      */
     public function syncSteps(string $current_key, string $name, ?string $value = null, ?array $form_data = null, ?string $prev_key = null): static
     {
         $current_key = explode(':', $current_key)[0] ?? '';
 
         $messageService = resolve('message');
+        $message_id = $messageService->messageId;
+        $lastStep = resolve('message')->lastStep;
+
         /** @var OrderStep $existingStep */
-        $prev_key = $prev_key ?? resolve('message')->lastStep?->current_key ?? $messageService->defaultKey;
+        $prev_key = $prev_key ?? $lastStep?->current_key ?? $messageService->defaultKey;
 
         if (explode('@', $current_key)[0] == (new Home())->getName()) {
             $this->steps()->delete();
@@ -115,7 +120,7 @@ class Order extends Model
 
             !$existingStep->value && !$existingStep->form_data && $existingStep->update(compact('value', 'form_data'));
         } else {
-            $this->steps()->create(compact('current_key', 'prev_key', 'name', 'value', 'form_data'));
+            $this->steps()->create(compact('current_key', 'prev_key', 'name', 'value', 'form_data', 'message_id'));
         }
         $this->load('steps');
 

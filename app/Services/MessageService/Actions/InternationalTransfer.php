@@ -18,12 +18,13 @@ class InternationalTransfer extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.international_transfer.message.service_type');
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_transfer.order.services'),
             $this->messageService->getSelectedOptionName()
         );
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.international_transfer.message.service_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
