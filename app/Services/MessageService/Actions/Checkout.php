@@ -41,7 +41,7 @@ class Checkout extends AbstractAction
             'text' => $text,
             'reply_markup' => $reply_markup,
         ]);
-        if (count($this->order->file_ids ?? [])) {
+        if (count($this->messageService->order->file_ids ?? [])) {
             foreach ($this->messageService->order->file_ids as $type => $files) {
                 if ($type == Order::FILE_TYPE_DOOCUMENT) {
                     foreach ($files as $file) {

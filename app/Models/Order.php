@@ -96,7 +96,6 @@ class Order extends Model
      * @param array|null $form_data
      * @param string|null $prev_key
      * @return $this
-     * @throws TelegramSDKException
      */
     public function syncSteps(string $current_key, string $name, ?string $value = null, ?array $form_data = null, ?string $prev_key = null): static
     {
