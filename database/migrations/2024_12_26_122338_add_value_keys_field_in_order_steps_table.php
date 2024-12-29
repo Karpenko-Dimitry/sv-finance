@@ -13,9 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->bigInteger('chat_id')->nullable()->after('telegram_user_id');
-            $table->index(['chat_id']);
+        Schema::table('order_steps', function (Blueprint $table) {
+            $table->json('value_keys')->after('value')->nullable();
         });
     }
 
@@ -26,9 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropIndex(['chat_id']);
-            $table->dropColumn('chat_id');
+        Schema::table('order_steps', function (Blueprint $table) {
+            $table->dropColumn('value_keys');
         });
     }
 };

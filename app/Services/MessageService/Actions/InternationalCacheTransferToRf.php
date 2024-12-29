@@ -92,7 +92,6 @@ class InternationalCacheTransferToRf extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_cache_transfer_to_rf.order.country'),
-            $this->messageService->getSelectedOptionName()
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;

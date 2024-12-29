@@ -155,7 +155,6 @@ class PaymentAgencyAgreement extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.payment_agency_agreement.order.currency'),
-            $this->messageService->getSelectedOptionName()
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
@@ -223,7 +222,6 @@ class PaymentAgencyAgreement extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.payment_agency_agreement.order.city'),
-            $this->messageService->getSelectedOptionName()
         );
 
         $chat_id = $this->messageService->chatId;

@@ -225,7 +225,6 @@ class InternationalSepaTransferFromRf extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_sepa_transfer_from_rf.order.transfer_type'),
-            $this->messageService->getSelectedOptionName()
         );
 
         $chat_id = $this->messageService->chatId;
@@ -324,7 +323,6 @@ class InternationalSepaTransferFromRf extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_sepa_transfer_from_rf.order.transfer_type'),
-            $this->messageService->getSelectedOptionName()
         );
 
         $chat_id = $this->messageService->chatId;
@@ -354,7 +352,6 @@ class InternationalSepaTransferFromRf extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_sepa_transfer_from_rf.order.transfer_type'),
-            $this->messageService->getSelectedOptionName()
         );
 
         $chat_id = $this->messageService->chatId;

@@ -25,15 +25,17 @@ class CurrencyExchange extends AbstractAction
             trans('telegram.currency_exchange.order.services'),
             $this->messageService->getSelectedOptionName()
         );
-
-        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
-        $text .= trans('telegram.currency_exchange.message.service_type');
-
+        $text = trans('telegram.currency_exchange.message.service_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.currency_exchange.button.buy'), 'callback_data' => $this->getActionKey('city')],
-                ['text' =>  trans('telegram.currency_exchange.button.sell'), 'callback_data' => $this->getActionKey('city')],
+                [
+                    'text' => trans('telegram.currency_exchange.button.buy'),
+                    'callback_data' => $this->getActionKey('city', trans('telegram.currency_exchange.message_vars.buy'))
+                ],
+                [
+                    'text' =>  trans('telegram.currency_exchange.button.sell'),
+                    'callback_data' => $this->getActionKey('city', trans('telegram.currency_exchange.message_vars.sell'))],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
@@ -51,21 +53,29 @@ class CurrencyExchange extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $this->messageService->order->syncSteps(
-            $this->getActionKey(__FUNCTION__),
-            trans('telegram.currency_exchange.order.service_type'),
-            $this->messageService->getSelectedOptionName()
+        $order = $this->messageService->order->syncSteps(
+            current_key: $this->getActionKey(__FUNCTION__),
+            name: trans('telegram.currency_exchange.order.service_type'),
+            value: $this->messageService->getSelectedOptionName(),
+            value_keys: $this->messageService->getSelectedOptionKey('action')
         );
 
-        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
-        $text .= trans('telegram.currency_exchange.message.city');
-
+        $text = trans('telegram.currency_exchange.message.city', $order->getStepsValueKeys());
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.button.moscow'), 'callback_data' => $this->getActionKey('sell_buy')],
-                ['text' =>  trans('telegram.button.sevastopol'), 'callback_data' => $this->getActionKey('sell_buy')],
+                [
+                    'text' => trans('telegram.button.moscow'),
+                    'callback_data' => $this->getActionKey('sell_buy', trans('telegram.currency_exchange.message_vars.moscow'))
+                ],
+                [
+                    'text' =>  trans('telegram.button.sevastopol'),
+                    'callback_data' => $this->getActionKey('sell_buy', trans('telegram.currency_exchange.message_vars.sevastopol'))
+                ],
             ], [
-                ['text' => trans('telegram.button.simferopol'), 'callback_data' => $this->getActionKey('sell_buy')],
+                [
+                    'text' => trans('telegram.button.simferopol'),
+                    'callback_data' => $this->getActionKey('sell_buy', trans('telegram.currency_exchange.message_vars.simferopol'))
+                ],
                 ['text' => trans('telegram.button.custom_city'), 'callback_data' => $this->getActionKey('custom_city')],
 
             ], [
@@ -91,16 +101,14 @@ class CurrencyExchange extends AbstractAction
                 return $this->sell_buy();
             }
         }
-        $this->messageService->order->syncSteps(
+        $order = $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.currency_exchange.order.city'),
-            trans('telegram.currency_exchange.order.custom_city')
         );
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
-        $text .= trans('telegram.currency_exchange.message.custom_city');
+        $text = trans('telegram.currency_exchange.message.custom_city', $order->getStepsValueKeys());
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -120,19 +128,25 @@ class CurrencyExchange extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $this->messageService->order->syncSteps(
-            $this->getActionKey(__FUNCTION__),
-            trans('telegram.currency_exchange.order.city'),
-            $this->messageService->getSelectedOptionName()
+        $order = $this->messageService->order->syncSteps(
+            current_key: $this->getActionKey(__FUNCTION__),
+            name: trans('telegram.currency_exchange.order.city'),
+            value: $this->messageService->getSelectedOptionName(),
+            value_keys: $this->messageService->getSelectedOptionKey('city')
         );
 
-        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
-        $text .= trans('telegram.currency_exchange.message.currency');
+        $text = trans('telegram.currency_exchange.message.currency' , $order->getStepsValueKeys());
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.button.usd'), 'callback_data' => $this->getActionKey('sell_buy_usd')],
-                ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('amount')],
+                [
+                    'text' => trans('telegram.button.usd'),
+                    'callback_data' => $this->getActionKey('sell_buy_usd', trans('telegram.currency_exchange.message_vars.usd'))
+                ],
+                [
+                    'text' =>  trans('telegram.button.eur'),
+                    'callback_data' => $this->getActionKey('amount', trans('telegram.currency_exchange.message_vars.eur'))
+                ],
                 ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('custom_currency')],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -157,15 +171,13 @@ class CurrencyExchange extends AbstractAction
                 return $this->amount();
             }
         }
-        $this->messageService->order->syncSteps(
-            $this->getActionKey(__FUNCTION__),
-            trans('telegram.currency_exchange.order.currency_type'),
-            $this->messageService->getSelectedOptionName()
+        $order = $this->messageService->order->syncSteps(
+            current_key: $this->getActionKey(__FUNCTION__),
+            name: trans('telegram.currency_exchange.order.currency_type'),
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
-        $text .= trans('telegram.message.custom_currency');
+        $text = trans('telegram.message.custom_currency', $order->getStepsValueKeys());
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -185,14 +197,14 @@ class CurrencyExchange extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $this->messageService->order->syncSteps(
-            $this->getActionKey(__FUNCTION__),
-            trans('telegram.currency_exchange.order.currency'),
-            $this->messageService->getSelectedOptionName()
+        $order = $this->messageService->order->syncSteps(
+            current_key: $this->getActionKey(__FUNCTION__),
+            name: trans('telegram.currency_exchange.order.currency'),
+            value: $this->messageService->getSelectedOptionName(),
+            value_keys: $this->messageService->getSelectedOptionKey('currency'),
         );
 
-        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
-        $text .= trans('telegram.currency_exchange.message.currency_type');
+        $text = trans('telegram.currency_exchange.message.currency_type', $order->getStepsValueKeys());
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -223,15 +235,16 @@ class CurrencyExchange extends AbstractAction
                 return $this->cart();
             }
         }
-        $this->messageService->order->syncSteps(
-            $this->getActionKey(__FUNCTION__),
-            trans('telegram.currency_exchange.order.currency_type'),
-            $this->messageService->getSelectedOptionName()
+        $order = $this->messageService->order->syncSteps(
+            current_key: $this->getActionKey(__FUNCTION__),
+            name: trans('telegram.currency_exchange.order.currency_type'),
+            value: $this->messageService->getSelectedOptionName(),
+            value_keys: $this->messageService->getSelectedOptionKey('currency'),
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text =  $this->messageService->order->getStepsFormattedData() . "\n\n";
-        $text .= trans('telegram.currency_exchange.message.amount');
+
+        $text = trans('telegram.currency_exchange.message.amount', $order->getStepsValueKeys());
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

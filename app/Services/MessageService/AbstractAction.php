@@ -4,6 +4,7 @@ namespace App\Services\MessageService;
 
 abstract class AbstractAction
 {
+    const PREFIX = '__prefix__';
     protected ?string $name = null;
     public const DEFAULT_METHOD = 'start';
     protected int $postfix = 0;
@@ -24,10 +25,11 @@ abstract class AbstractAction
 
     /**
      * @param string|null $methodName
+     * @param string|null $customPostfix
      * @return string
      */
-    public function getActionKey(?string $methodName = null): string {
-        $uniquePostfix = $this->postfix++;
+    public function getActionKey(?string $methodName = null, ?string $customPostfix = null): string {
+        $uniquePostfix = $customPostfix ?? (self::PREFIX . $this->postfix++);
 
         return $this->getActionKeyWithoutPostfix($methodName) . ":$uniquePostfix";
     }

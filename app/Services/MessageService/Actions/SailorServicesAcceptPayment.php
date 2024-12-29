@@ -89,7 +89,6 @@ class SailorServicesAcceptPayment extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.currency'),
-            $this->messageService->getSelectedOptionName()
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
@@ -221,7 +220,6 @@ class SailorServicesAcceptPayment extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.city_transfer'),
-            $this->messageService->getSelectedOptionName()
         );
 
         $chat_id = $this->messageService->chatId;
@@ -287,7 +285,6 @@ class SailorServicesAcceptPayment extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.transfer_type'),
-            $this->messageService->getSelectedOptionName()
         );
 
         $chat_id = $this->messageService->chatId;
@@ -321,7 +318,6 @@ class SailorServicesAcceptPayment extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.pay_type'),
-            $this->messageService->getSelectedOptionName()
         );
 
         $chat_id = $this->messageService->chatId;
@@ -389,7 +385,6 @@ class SailorServicesAcceptPayment extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.sailor_services_accept_payment.order.recipient_currency'),
-            $this->messageService->getSelectedOptionName()
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;

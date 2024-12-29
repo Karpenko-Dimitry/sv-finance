@@ -2,6 +2,7 @@
 
 namespace App\Services\MessageService;
 
+use App\Models\ChatMember;
 use App\Models\Order;
 use App\Models\OrderStep;
 use App\Models\TelegramUser;
@@ -154,6 +155,13 @@ class MessageService
      */
     public function receive(): static
     {
+        $data = $this->response->chatMember?->chat ?? $this->response->channelPost?->chat;
+        ChatMember::makeNew($data?->toArray());
+
+        if (!$this->telegramUser) {
+            return $this;
+        }
+
         $this->order = Order::getOrder($this->telegramUser, $this->chatId);
         $this->setLastStep();
         $this->executeMessage();
@@ -167,7 +175,7 @@ class MessageService
      */
     public function setLastStep(?OrderStep $step = null): static
     {
-        $this->lastStep = $step ?? $this->order->getLastStep();
+        $this->lastStep = $step ?? $this->order?->getLastStep();
 
         return $this;
     }
@@ -197,7 +205,22 @@ class MessageService
     {
         $keyBoards = Arr::flatten($this->message->replyMarkup?->inline_keyboard ?? [],1);
         $keyBoard = collect($keyBoards)->where('callback_data', $this->key)->first();
+
         return $keyBoard['text'] ?? $this->message->text ?? '';
+    }
+
+    /**
+     * @param string $key
+     * @return string[]|null
+     */
+    public function getSelectedOptionKey(string $key): ?array
+    {
+        $keyBoards = Arr::flatten($this->message->replyMarkup?->inline_keyboard ?? [],1);
+        $keyBoard = collect($keyBoards)->where('callback_data', $this->key)->first();
+        $callbackData = $keyBoard['callback_data'] ?? '';
+        $value = explode(':', $callbackData)[1] ?? $this->message->text ?? '';
+
+        return !str_starts_with($value, AbstractAction::PREFIX) ? [$key => $value] : null;
     }
 
     /**

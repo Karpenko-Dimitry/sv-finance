@@ -124,7 +124,6 @@ class FinancialConsultingLegalize extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.financial_consulting_legalize.order.city'),
-            $this->messageService->getSelectedOptionName()
         );
 
         $chat_id = $this->messageService->chatId;
@@ -189,8 +188,8 @@ class FinancialConsultingLegalize extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.financial_consulting_legalize.order.currency'),
-            $this->messageService->getSelectedOptionName()
         );
+
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
         $text = $this->messageService->order->getStepsFormattedData() . "\n\n";

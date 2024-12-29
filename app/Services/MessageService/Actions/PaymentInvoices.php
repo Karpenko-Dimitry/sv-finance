@@ -9,7 +9,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 
 class PaymentInvoices extends AbstractAction
 {
-    protected ?string $name = "payment_invoices";
+    protected ?string $name = "payment_invoice";
 
     /**
      * @return $this

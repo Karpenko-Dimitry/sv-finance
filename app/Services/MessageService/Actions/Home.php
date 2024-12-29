@@ -27,6 +27,7 @@ class Home extends AbstractAction
                 'inline_keyboard' => [
                     [
                         ['text' => trans('telegram.button.individuals'), 'callback_data' => $this->getActionKey('individuals')],
+                    ], [
                         ['text' => trans('telegram.button.legal_entities'), 'callback_data' => $this->getActionKey('legal_entities')],
                     ]
                 ],

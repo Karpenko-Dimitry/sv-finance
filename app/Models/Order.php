@@ -66,8 +66,17 @@ class Order extends Model
         return $this->hasMany(OrderStep::class)->orderByDesc('created_at');
     }
 
+    /**
+     * @param TelegramBotUser $telegramUser
+     * @param int $chatId
+     * @return Order|Model|HasMany|\LaravelIdea\Helper\App\Models\_IH_Order_QB|object|null
+     */
     public static function getOrder(TelegramBotUser $telegramUser, int $chatId)
     {
+        if ($chatId < 0) {
+            return null;
+        }
+
         $user_id = $telegramUser->id;
         $telegramUser = TelegramUser::where(compact('user_id'))->first() ?? TelegramUser::makeNew($telegramUser->toArray());
         resolve('message')->setLocalTelegramUser($telegramUser);
@@ -95,9 +104,17 @@ class Order extends Model
      * @param string|null $value
      * @param array|null $form_data
      * @param string|null $prev_key
+     * @param array|null $value_keys
      * @return $this
      */
-    public function syncSteps(string $current_key, string $name, ?string $value = null, ?array $form_data = null, ?string $prev_key = null): static
+    public function syncSteps(
+        string $current_key,
+        string $name,
+        ?string $value = null,
+        ?array $form_data = null,
+        ?string $prev_key = null,
+        ?array $value_keys = null
+    ): static
     {
         $current_key = explode(':', $current_key)[0] ?? '';
 
@@ -119,7 +136,15 @@ class Order extends Model
 
             !$existingStep->value && !$existingStep->form_data && $existingStep->update(compact('value', 'form_data'));
         } else {
-            $this->steps()->create(compact('current_key', 'prev_key', 'name', 'value', 'form_data', 'message_id'));
+            $this->steps()->create(compact(
+                'current_key',
+                'prev_key',
+                'name',
+                'value',
+                'form_data',
+                'message_id',
+                'value_keys'
+            ));
         }
         $this->load('steps');
 
@@ -192,4 +217,17 @@ class Order extends Model
                 return $result;
             })->implode("\n");
     }
+
+    /**
+     * @return array
+     */
+    public function getStepsValueKeys(): array
+    {
+        return $this->steps->filter(fn(OrderStep $step) => $step->value_keys)
+            ->reduce(function(array $collection, OrderStep $step) {
+                return array_merge($collection,  $step->value_keys ?? []);
+            }, []);
+    }
+
+
 }
