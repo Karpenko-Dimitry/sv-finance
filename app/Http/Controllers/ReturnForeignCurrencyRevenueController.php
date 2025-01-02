@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePaymentInvoiceRequest;
 use App\Http\Requests\StoreReturnForeignCurrencyRevenueRequest;
 use App\Models\Order;
 use App\Models\TelegramUser;
 use App\Services\MessageService\Actions\Home;
-use App\Services\MessageService\Actions\PaymentInvoices;
 use App\Services\MessageService\Actions\ReturnForeignCurrencyRevenue;
 use App\Services\MessageService\MessageService;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +37,7 @@ class ReturnForeignCurrencyRevenueController extends Controller
         $order = Order::getOrderByLocalUser($localUser);
 
         $formData = collect($request->only([
-            'beneficiary_name', 'beneficiary_address', 'iban', 'swift_code', 'bank_name',
+            'legal_entity', 'address', 'iban', 'swift_code', 'bank_name',
             'bank_address', 'director', 'registration_date', 'registration_number', 'vat', 'web',
             'example', 'task', 'conditions',
         ]))->reduce(function(array $collection, mixed $value, string $key) use ($request) {

@@ -15,6 +15,7 @@
             <div class="row g-5 pb-150">
                 <div class="col-md-12 col-lg-12">
                     <h4 class="mb-3">{{ trans('telegram.payment_invoice.form.title') }}</h4>
+                    <p class="lead">{{ trans('telegram.payment_invoice.form.text') }}</p>
                     {{ Form::open([
                         'method' => 'post',
                         'url' => route('payment-invoices.store'),
@@ -25,22 +26,23 @@
                     ]) }}
                         <div class="row g-3">
                             <div class="col-sm-12">
-                                <label for="first_name" class="form-label">{{ trans('telegram.payment_invoice.form.label.first_name') }}</label>
-                                {{ Form::text('first_name', old('first_name'), [
-                                    'class' => 'form-control' . ($errors->first('first_name') ? ' is-invalid' : ''),
-                                    'placeholder' => trans('telegram.payment_invoice.form.placeholder.first_name'),
-                                    'id' => 'first_name',
+                                <label for="legal_entity" class="form-label">{{ trans('telegram.payment_invoice.form.label.legal_entity') }}</label>
+                                {{ Form::text('legal_entity', old('legal_entity'), [
+                                    'class' => 'form-control' . ($errors->first('legal_entity') ? ' is-invalid' : ''),
+                                    'placeholder' => trans('telegram.payment_invoice.form.placeholder.legal_entity'),
+                                    'id' => 'legal_entity',
                                 ]) }}
-                                <div class="invalid-feedback">{{  $errors->first('first_name') }}</div>
+                                <div class="invalid-feedback">{{  $errors->first('legal_entity') }}</div>
                             </div>
                             <div class="col-sm-12">
-                                <label for="last_name" class="form-label">{{ trans('telegram.payment_invoice.form.label.last_name') }}</label>
-                                {{ Form::text('last_name', null, [
-                                    'class' => 'form-control' . ($errors->first('last_name') ? ' is-invalid' : ''),
-                                    'placeholder' => trans('telegram.payment_invoice.form.placeholder.last_name'),
-                                    'id' => 'last_name',
+                                <label for="address" class="form-label">{{ trans('telegram.payment_invoice.form.label.address') }}</label>
+                                {{ Form::textarea('address', null, [
+                                    'class' => 'form-control' . ($errors->first('address') ? ' is-invalid' : ''),
+                                    'placeholder' => trans('telegram.payment_invoice.form.placeholder.address'),
+                                    'id' => 'address',
+                                    'rows' => 3
                                 ]) }}
-                                <div class="invalid-feedback">{{  $errors->first('last_name') }}</div>
+                                <div class="invalid-feedback">{{  $errors->first('address') }}</div>
                             </div>
                             <div class="col-sm-12">
                                 <label for="iban" class="form-label">{{ trans('telegram.payment_invoice.form.label.iban') }}</label>
@@ -121,16 +123,6 @@
                                     'class' => 'form-control',
                                     'placeholder' => trans('telegram.payment_invoice.form.placeholder.web'),
                                     'id' => 'web',
-                                ]) }}
-                                <div class="invalid-feedback"></div>
-                            </div>
-                            <div class="col-sm-12">
-                                <label for="example" class="form-label">{{ trans('telegram.payment_invoice.form.label.example') }}</label>
-                                {{ Form::textarea('example', null, [
-                                    'class' => 'form-control',
-                                    'placeholder' => trans('telegram.payment_invoice.form.placeholder.example'),
-                                    'id' => 'example',
-                                    'rows' => 3
                                 ]) }}
                                 <div class="invalid-feedback"></div>
                             </div>

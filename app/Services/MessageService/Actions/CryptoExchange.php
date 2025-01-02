@@ -2,7 +2,6 @@
 
 namespace App\Services\MessageService\Actions;
 
-use App\Models\OrderStep;
 use App\Services\MessageService\AbstractAction;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\Keyboard\Keyboard;
@@ -24,8 +23,8 @@ class CryptoExchange extends AbstractAction
             trans('telegram.crypto_exchange.order.service_type'),
             $this->messageService->getSelectedOptionName()
         );
-
-        $text = trans('telegram.crypto_exchange.message.service_type');
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.service_type');
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -61,8 +60,8 @@ class CryptoExchange extends AbstractAction
             value: $this->messageService->getSelectedOptionName(),
             value_keys: $this->messageService->getSelectedOptionKey('action'),
         );
-
-        $text = trans('telegram.crypto_exchange.message.currency_type', $this->messageService->order->getStepsValueKeys());
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.currency_type', $this->messageService->order->getStepsValueKeys());
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -111,7 +110,8 @@ class CryptoExchange extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.crypto_exchange.message.amount', $this->messageService->order->getStepsValueKeys());
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.amount', $this->messageService->order->getStepsValueKeys());
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -137,8 +137,8 @@ class CryptoExchange extends AbstractAction
             value: $this->messageService->message->text,
            value_keys: $this->messageService->getSelectedOptionKey('amount'),
         );
-
-        $text = trans('telegram.crypto_exchange.message.pay_type', $this->messageService->order->getStepsValueKeys());
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.pay_type', $this->messageService->order->getStepsValueKeys());
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -168,8 +168,8 @@ class CryptoExchange extends AbstractAction
             trans('telegram.crypto_exchange.order.pay_type'),
             $this->messageService->getSelectedOptionName()
         );
-
-        $text = trans('telegram.crypto_exchange.message.city', $this->messageService->order->getStepsValueKeys());
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.city', $this->messageService->order->getStepsValueKeys());
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -208,8 +208,8 @@ class CryptoExchange extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-
-        $text = trans('telegram.crypto_exchange.message.custom_city', $this->messageService->order->getStepsValueKeys());
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.custom_city', $this->messageService->order->getStepsValueKeys());
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -234,8 +234,8 @@ class CryptoExchange extends AbstractAction
             trans('telegram.crypto_exchange.order.city'),
             $this->messageService->getSelectedOptionName()
         );
-
-        $text = trans('telegram.message.crypto_currency_type', $this->messageService->order->getStepsValueKeys());
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.message.crypto_currency_type', $this->messageService->order->getStepsValueKeys());
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -265,8 +265,8 @@ class CryptoExchange extends AbstractAction
             trans('telegram.crypto_exchange.order.pay_type'),
             $this->messageService->getSelectedOptionName()
         );
-
-        $text = trans('telegram.crypto_exchange.message.bank', $this->messageService->order->getStepsValueKeys());
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.bank', $this->messageService->order->getStepsValueKeys());
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -305,8 +305,8 @@ class CryptoExchange extends AbstractAction
 
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-
-        $text = trans('telegram.crypto_exchange.message.custom_bank', $this->messageService->order->getStepsValueKeys());
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.custom_bank', $this->messageService->order->getStepsValueKeys());
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

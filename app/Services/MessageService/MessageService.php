@@ -20,6 +20,7 @@ use Telegram\Bot\Objects\User;
 
 class MessageService
 {
+    const MANAGER_URL = 'https://t.me/SuperVisor_in_Finance';
     public Api $telegram;
     protected Update $response;
     protected ?CallbackQuery $callbackQuery;
@@ -164,7 +165,13 @@ class MessageService
 
         $this->order = Order::getOrder($this->telegramUser, $this->chatId);
         $this->setLastStep();
-        $this->executeMessage();
+        try {
+            $this->executeMessage();
+        } catch (\Throwable $exception) {
+            $message = $exception->getMessage();
+            $code = $exception->getCode();
+            log_debug('MessageService', compact('code', 'message'));
+        }
         $this->callbackQuery && $this->telegram->answerCallbackQuery(['callback_query_id' => $this->callbackQuery->id]);
 
         return $this;

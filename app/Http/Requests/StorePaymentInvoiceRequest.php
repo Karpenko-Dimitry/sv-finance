@@ -24,16 +24,16 @@ class StorePaymentInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'legal_entity' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
         ];
     }
 
     public function attributes()
     {
         return [
-            'first_name' => trans('telegram.payment_invoice.form.label.first_name'),
-            'last_name' => trans('telegram.payment_invoice.form.label.last_name'),
+            'legal_entity' => trim(trans('telegram.payment_invoice.form.label.legal_entity'), ':'),
+            'address' =>  trim(trans('telegram.payment_invoice.form.label.address'), ':'),
         ];
     }
 }

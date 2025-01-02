@@ -4,7 +4,7 @@ namespace App\Services\MessageService\Actions;
 
 use App\Models\Order;
 use App\Services\MessageService\AbstractAction;
-use Illuminate\Support\Facades\Storage;
+use App\Services\MessageService\MessageService;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\FileUpload\InputFile;
 use Telegram\Bot\Keyboard\Keyboard;
@@ -29,6 +29,8 @@ class Home extends AbstractAction
                         ['text' => trans('telegram.button.individuals'), 'callback_data' => $this->getActionKey('individuals')],
                     ], [
                         ['text' => trans('telegram.button.legal_entities'), 'callback_data' => $this->getActionKey('legal_entities')],
+                    ], [
+                        ['text' => trans('telegram.button.contact_manager'), 'url' => MessageService::MANAGER_URL],
                     ]
                 ],
             ]
@@ -99,6 +101,8 @@ class Home extends AbstractAction
                 ['text' => trans('telegram.button.payment_agency_agreement'), 'callback_data' => (new PaymentAgencyAgreement())->getActionKey()],
             ], [
                 ['text' => trans('telegram.button.return_foreign_currency_revenue'), 'web_app' => ['url' => route('return-foreign-currency-revenue.create')]],
+            ], [
+                ['text' => trans('telegram.button.contact_manager'), 'url' => MessageService::MANAGER_URL],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->getActionKeyWithoutPostfix()],
             ]

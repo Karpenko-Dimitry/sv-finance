@@ -37,7 +37,7 @@ class PaymentInvoiceFormController extends Controller
         $order = Order::getOrderByLocalUser($localUser);
 
         $formData = collect($request->only([
-            'first_name', 'last_name', 'iban', 'swift_code', 'bank_name', 'bank_address',
+            'legal_entity', 'address', 'iban', 'swift_code', 'bank_name', 'bank_address',
             'director', 'registration_date', 'registration_number', 'vat', 'web', 'example',
             'task', 'conditions'
         ]))->reduce(function(array $collection, mixed $value, string $key) use ($request) {

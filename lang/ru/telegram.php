@@ -48,13 +48,15 @@ return [
             'amount' => 'Укажите сумму :action :currency:',
             'custom_currency' => 'Укажите желаюмую криптовалюту для :action:',
             'custom_city' => 'Укажите город :action :currency:',
-            'pay_type' => 'Я отдаю:',
+            'pay_type' => ':payment_action за услугу :action :amount :currency',
             'bank' => 'Выберите банк по оплате :amount :currency:',
             'custom_bank' => 'Укажите банк по оплате :amount :currency:',
         ],
         'message_vars' => [
             'sell' => 'продажи',
             'buy' => 'покупки',
+            'give' => 'Я отдаю',
+            'receive' => 'Я получаю',
             'btc' => 'BTC',
             'eth' => 'ETH',
             'usdt' => 'USDT',
@@ -408,9 +410,11 @@ return [
 
     'payment_invoice' => [
         'form' => [
-            'title' => 'Опросник по оплате инвойсов',
-            'text' => 'Внимательно заполните форму',
+            'title' => 'Форма заявки на оплату инвойса:',
+            'text' => 'Прошу максимально заполните данные:',
             'placeholder' => [
+                'legal_entity' => 'Укажите наименование',
+                'address' => 'Укажите адрес',
                 'first_name' => 'Укажите имя',
                 'last_name' => 'Укажите фамилию',
                 'iban' => 'Укажите IBAN',
@@ -430,6 +434,8 @@ return [
                 'submit' => 'Подвтердить заявку'
             ],
             'label' => [
+                'legal_entity' => 'Наименование юридического лица:',
+                'address' => 'Aдрес юридического лица:',
                 'first_name' => 'Имя получателя',
                 'last_name' => 'Фамилия получателя',
                 'iban' => 'Счёт получателя (IBAN):',
@@ -453,9 +459,11 @@ return [
 
     'return_foreign_currency_revenue' => [
         'form' => [
-            'title' => 'Опросник по возврату валютной выручки',
-            'text' => 'Внимательно заполните форму',
+            'title' => 'Форма заявки по возврату валютной выручки',
+            'text' => 'Прошу максимально заполните данные:',
             'label' => [
+                'legal_entity' => 'Наименование юридического лица:',
+                'address' => 'Aдрес юридического лица:',
                 'beneficiary_name' => 'Имя отправителя',
                 'beneficiary_address' => 'Адрес отправителя',
                 'iban' => 'Счёт отправителя (IBAN)',
@@ -475,6 +483,8 @@ return [
                 'submit' => 'Подвтердить заявку'
             ],
             'placeholder' => [
+                'legal_entity' => 'Укажите наименование',
+                'address' => 'Укажите адрес',
                 'beneficiary_name' => 'Укажите имя отправителя:',
                 'beneficiary_address' => 'Укажите адрес отправителя:',
                 'iban' => 'Счёт отрпавилетеля (IBAN):',
@@ -581,9 +591,10 @@ return [
     ],
     'button' => [
         'home' => '🏠 Главная',
+        'contact_manager' => '💬 Связаться с менеджером',
         'individuals' => '👨 Частным лицам',
         'legal_entities' => '🏬 Юридическим лицам',
-
+        'upload' => 'Загрузить файл',
         'currency_exchange' => '💰Обмен валюты',
         'crypto_exchange' => '🪙 Обмен криптовалюты',
         'international_transfers' => '🏧 Международные переводы',

@@ -15,6 +15,7 @@
             <div class="row g-5 pb-150">
                 <div class="col-md-12 col-lg-12">
                     <h4 class="mb-3">{{ trans('telegram.return_foreign_currency_revenue.form.title') }}</h4>
+                    <p class="lead">{{ trans('telegram.return_foreign_currency_revenue.form.text') }}</p>
                     {{ Form::open([
                         'method' => 'post',
                         'url' => route('return-foreign-currency-revenue.store'),
@@ -25,23 +26,23 @@
                     ]) }}
                     <div class="row g-3">
                         <div class="col-sm-12">
-                            <label for="beneficiary_name" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.beneficiary_name') }}</label>
-                            {{ Form::text('beneficiary_name', old('beneficiary_name'), [
-                                'class' => 'form-control' . ($errors->first('beneficiary_name') ? ' is-invalid' : ''),
-                                'placeholder' => trans('telegram.return_foreign_currency_revenue.form.placeholder.beneficiary_name'),
-                                'id' => 'beneficiary_name',
+                            <label for="legal_entity" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.legal_entity') }}</label>
+                            {{ Form::text('legal_entity', old('legal_entity'), [
+                                'class' => 'form-control' . ($errors->first('legal_entity') ? ' is-invalid' : ''),
+                                'placeholder' => trans('telegram.return_foreign_currency_revenue.form.placeholder.legal_entity'),
+                                'id' => 'legal_entity',
                             ]) }}
-                            <div class="invalid-feedback">{{  $errors->first('beneficiary_name') }}</div>
+                            <div class="invalid-feedback">{{  $errors->first('legal_entity') }}</div>
                         </div>
                         <div class="col-sm-12">
-                            <label for="beneficiary_address" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.beneficiary_address') }}</label>
-                            {{ Form::textarea('beneficiary_address', null, [
-                                'class' => 'form-control' . ($errors->first('beneficiary_address') ? ' is-invalid' : ''),
-                                'placeholder' => trans('telegram.return_foreign_currency_revenue.form.placeholder.beneficiary_address'),
-                                'id' => 'beneficiary_address',
+                            <label for="address" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.address') }}</label>
+                            {{ Form::textarea('address', null, [
+                                'class' => 'form-control' . ($errors->first('address') ? ' is-invalid' : ''),
+                                'placeholder' => trans('telegram.return_foreign_currency_revenue.form.placeholder.address'),
+                                'id' => 'address',
                                 'rows' => 3
                             ]) }}
-                            <div class="invalid-feedback">{{  $errors->first('beneficiary_address') }}</div>
+                            <div class="invalid-feedback">{{  $errors->first('address') }}</div>
                         </div>
                         <div class="col-sm-12">
                             <label for="iban" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.iban') }}</label>
@@ -126,16 +127,6 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-sm-12">
-                            <label for="example" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.example') }}</label>
-                            {{ Form::textarea('example', null, [
-                                'class' => 'form-control',
-                                'placeholder' => trans('telegram.return_foreign_currency_revenue.form.placeholder.example'),
-                                'id' => 'example',
-                                'rows' => 3
-                            ]) }}
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-sm-12">
                             <label for="task" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.task') }}</label>
                             {{ Form::textarea('task', null, [
                                 'class' => 'form-control',
@@ -155,10 +146,12 @@
                             ]) }}
                             <div class="invalid-feedback"></div>
                         </div>
-                        {{--                            <div class="col-sm-12">--}}
-                        {{--                                <button class="col-sm-12 w-100 btn btn-primary btn-lg" type="submit">{{  trans('telegram.return_foreign_currency_revenue.form.button.submit') }}</button>--}}
-                        {{--                            </div>--}}
-                    </div>
+{{--                        <div class="form-group mt-3 text-left" upload-file>--}}
+{{--                            {!! Form::label('userFile', trans('telegram.button.upload'), ['class' => 'btn btn-primary btn-sm']) !!}--}}
+{{--                            {!! Form::file('user_file[]', ['id' => 'userFile', 'multiple', 'hidden', 'class' => 'form-control-file']) !!}--}}
+{{--                            <ul class="files-list"></ul>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
                     {{ Form::close() }}
                 </div>
             </div>

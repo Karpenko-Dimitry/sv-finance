@@ -24,16 +24,16 @@ class StoreReturnForeignCurrencyRevenueRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'beneficiary_name' => 'required|string|max:255',
-            'beneficiary_address' => 'required|string|max:255',
+            'legal_entity' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'beneficiary_name' => trans('telegram.return_foreign_currency_revenue.form.label.beneficiary_name'),
-            'beneficiary_address' => trans('telegram.return_foreign_currency_revenue.form.label.beneficiary_address'),
+            'legal_entity' => trim(trans('telegram.return_foreign_currency_revenue.form.label.legal_entity'), ':'),
+            'address' => trim(trans('telegram.return_foreign_currency_revenue.form.label.address'), ':'),
         ];
     }
 }
