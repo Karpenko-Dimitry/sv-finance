@@ -117,6 +117,8 @@ class FinancialConsultingLegalize extends AbstractAction
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
                 $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
             } else {
                 return $this->currency();
             }
@@ -181,6 +183,8 @@ class FinancialConsultingLegalize extends AbstractAction
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3) {
                 $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
             } else {
                 return $this->amount();
             }

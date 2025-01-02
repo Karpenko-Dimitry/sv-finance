@@ -172,6 +172,7 @@ class MessageService
             $code = $exception->getCode();
             log_debug('ERROR MessageService', compact('code', 'message'));
         }
+
         $this->callbackQuery && $this->telegram->answerCallbackQuery(['callback_query_id' => $this->callbackQuery->id]);
 
         return $this;

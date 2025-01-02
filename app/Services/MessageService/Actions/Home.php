@@ -20,6 +20,7 @@ class Home extends AbstractAction
     public function start(): static
     {
         $chat_id = $this->messageService->chatId;
+        $message_id = $this->messageService->messageId;
         $photo = InputFile::create(public_path('assets/img/avatar-black.png'));
         $caption = trans('telegram.message.start');
         $reply_markup = new Keyboard(
@@ -35,6 +36,14 @@ class Home extends AbstractAction
                 ],
             ]
         );
+        try {
+            $this->messageService->telegram->deleteMessage(compact('message_id', 'chat_id'));
+            $this->messageService->order->steps->pluck('message_id')->unique()->each(function ($message_id) use ($chat_id) {
+                $this->messageService->telegram->deleteMessage(compact('message_id', 'chat_id'));
+            });
+        } catch (\Throwable $exception) {
+        }
+
         $this->messageService->order->steps()->delete();
         $this->messageService->setMainKeyboard();
         $this->messageService->telegram->sendPhoto(compact('chat_id', 'photo', 'caption', 'reply_markup'));
@@ -72,7 +81,7 @@ class Home extends AbstractAction
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->getActionKeyWithoutPostfix()],
             ]
         ]]);
-
+        $this->messageService->telegram->deleteMessage(compact('chat_id', 'message_id'));
         $this->messageService->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
 
         return $this;
@@ -108,7 +117,7 @@ class Home extends AbstractAction
             ]
         ]]);
 
-
+        $this->messageService->telegram->deleteMessage(compact('chat_id', 'message_id'));
         $this->messageService->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
 
         return $this;

@@ -8,7 +8,7 @@ return [
             'currency' => 'Выберите валюту для :action в городе :city:',
             'currency_type' => 'Выберите тип :currency для :action:',
             'amount' => 'Укажите сумму для :action :currency в городе :city:',
-            'custom_currency' => 'Укажите желаемую валюту для :action валюты:',
+            'custom_currency' => 'Укажите жлеаюмую валюту для :action в городе :city:',
             'custom_city' => 'Укажите город для :action валюты:',
         ],
         'message_vars' => [
@@ -42,13 +42,14 @@ return [
     'crypto_exchange' => [
         'message' => [
             'service_type' => 'Выберите услугу по обмену криптовалюты:',
-            'city' => 'Выберите город :action :currency:',
+            'city' => 'Выберите город :action :amount :currency:',
             'currency' => 'Выберите криптовалюту для :action:',
             'currency_type' => 'Выберите криптовалюту для :action:',
             'amount' => 'Укажите сумму :action :currency:',
             'custom_currency' => 'Укажите желаюмую криптовалюту для :action:',
             'custom_city' => 'Укажите город :action :currency:',
             'pay_type' => ':payment_action за услугу :action :amount :currency',
+            'custom_pay_type' => ':payment_action за услугу :action :amount :currency следующим сопособом:',
             'bank' => 'Выберите банк по оплате :amount :currency:',
             'custom_bank' => 'Укажите банк по оплате :amount :currency:',
         ],
@@ -86,6 +87,7 @@ return [
             'amount' => 'Cумма криптовалюты:',
             'services' => 'Услуга по обмену криптовалюты:',
             'pay_type' => 'Тип оплаты:',
+            'custom_pay_type' => 'Тип оплаты:',
             'bank' => 'Банк оплаты:',
             'custom_bank' => 'Банк оплаты:',
         ],
@@ -668,6 +670,7 @@ return [
         'payment_invoices_city' => 'Где отдают:',
     ],
     'errors' => [
+        'not_alphabet' => '🤷 Значение должно быть буквенным',
         'str_length' => '🤷 Значение должно быть не меньше 3 символов и не больше 200 символов',
         'not_numeric' => '🤷 Ввведите пожалуйста числовое значение:',
         'invalid_amount' => '🤷 Сумма должна быть не меньше :amount. Повторите пожалуйста ввод.'

@@ -97,6 +97,8 @@ class CurrencyExchange extends AbstractAction
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
                 $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
             } else {
                 return $this->sell_buy();
             }
@@ -167,6 +169,8 @@ class CurrencyExchange extends AbstractAction
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3) {
                 $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
             } else {
                 return $this->amount();
             }
@@ -177,7 +181,7 @@ class CurrencyExchange extends AbstractAction
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
-        $text = trans('telegram.message.custom_currency', $order->getStepsValueKeys());
+        $text = trans('telegram.currency_exchange.message.custom_currency', $order->getStepsValueKeys());
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

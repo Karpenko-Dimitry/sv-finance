@@ -89,6 +89,7 @@ class CryptoExchange extends AbstractAction
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
         ]]);
+
         $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
 
         return $this;
@@ -153,6 +154,8 @@ class CryptoExchange extends AbstractAction
                 ['text' => trans('telegram.crypto_exchange.button.card'), 'callback_data' => $this->getActionKey('bank')],
 
             ], [
+                ['text' => trans('telegram.button.custom'), 'callback_data' => $this->getActionKey('custom_pay_type')],
+            ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
             ]
         ]]);
@@ -204,6 +207,8 @@ class CryptoExchange extends AbstractAction
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
                 $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
             } else {
                 return $this->currency_type();
             }
@@ -217,6 +222,37 @@ class CryptoExchange extends AbstractAction
         $message_id = $this->messageService->messageId;
         $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.crypto_exchange.message.custom_city', $this->messageService->order->getStepsValueKeys());
+        $text = $validationText ?? $text;
+        $reply_markup = new Keyboard(['inline_keyboard' => [
+            [
+                ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
+            ]
+        ]]);
+        $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+
+        return $this;
+    }
+
+    public function custom_pay_type(): static
+    {
+        if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
+            if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
+                $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
+            } else {
+                return $this->cart();
+            }
+        }
+        $this->messageService->order->syncSteps(
+            $this->getActionKey(__FUNCTION__),
+            trans('telegram.crypto_exchange.order.city'),
+        );
+
+        $chat_id = $this->messageService->chatId;
+        $message_id = $this->messageService->messageId;
+        $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
+        $text .= trans('telegram.crypto_exchange.message.custom_pay_type', $this->messageService->order->getStepsValueKeys());
         $text = $validationText ?? $text;
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
@@ -301,6 +337,8 @@ class CryptoExchange extends AbstractAction
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
                 $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
             } else {
                 return $this->cart();
             }
