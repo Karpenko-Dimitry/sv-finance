@@ -54,11 +54,18 @@ class CryptoExchange extends AbstractAction
     {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
+        $value_keys = $this->messageService->getSelectedOptionKey('action');
+        $action = $value_keys['action'] ?? null;
+        $payment_action = $action == trans('telegram.crypto_exchange.message_vars.buy')
+            ? trans('telegram.crypto_exchange.message_vars.give')
+            : trans('telegram.crypto_exchange.message_vars.take');
+        $value_keys = array_merge($value_keys, compact('payment_action'));
+
         $this->messageService->order->syncSteps(
             current_key: $this->getActionKey(__FUNCTION__),
             name: trans('telegram.crypto_exchange.order.services'),
             value: $this->messageService->getSelectedOptionName(),
-            value_keys: $this->messageService->getSelectedOptionKey('action'),
+            value_keys: $value_keys,
         );
         $text = $this->messageService->order->getStepsFormattedData() . "\n\n";
         $text .= trans('telegram.crypto_exchange.message.currency_type', $this->messageService->order->getStepsValueKeys());

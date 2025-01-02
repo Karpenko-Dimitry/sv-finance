@@ -56,7 +56,7 @@ return [
             'sell' => 'продажи',
             'buy' => 'покупки',
             'give' => 'Я отдаю',
-            'receive' => 'Я получаю',
+            'take' => 'Я получаю',
             'btc' => 'BTC',
             'eth' => 'ETH',
             'usdt' => 'USDT',

@@ -22,7 +22,7 @@ class MessageService
 {
     const MANAGER_URL = 'https://t.me/SuperVisor_in_Finance';
     public Api $telegram;
-    protected Update $response;
+    public Update $response;
     protected ?CallbackQuery $callbackQuery;
     public ?Message $message;
     protected ?User $telegramUser;
@@ -170,7 +170,7 @@ class MessageService
         } catch (\Throwable $exception) {
             $message = $exception->getMessage();
             $code = $exception->getCode();
-            log_debug('MessageService', compact('code', 'message'));
+            log_debug('ERROR MessageService', compact('code', 'message'));
         }
         $this->callbackQuery && $this->telegram->answerCallbackQuery(['callback_query_id' => $this->callbackQuery->id]);
 
