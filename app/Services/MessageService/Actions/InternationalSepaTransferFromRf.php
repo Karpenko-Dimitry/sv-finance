@@ -9,7 +9,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 
 class InternationalSepaTransferFromRf extends AbstractAction
 {
-    protected ?string $name = "international_sepa_transfer_from_rf";
+    protected ?string $name = "int_sepa_from_rf";
 
     /**
      * @return $this
@@ -20,6 +20,8 @@ class InternationalSepaTransferFromRf extends AbstractAction
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
                 $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
             } else {
                 return $this->recipient_amount();
             }
@@ -105,6 +107,8 @@ class InternationalSepaTransferFromRf extends AbstractAction
             ]
         ]]);
 
+        log_debug('test', [$reply_markup]);
+
         $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
 
         return $this;
@@ -119,6 +123,8 @@ class InternationalSepaTransferFromRf extends AbstractAction
         if ($this->messageService->lastStep->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
             if (strlen($this->messageService->message->text) < 3) {
                 $validationText = trans('telegram.errors.str_length');
+            } elseif (is_numeric($this->messageService->message->text)) {
+                $validationText = trans('telegram.errors.not_alphabet');
             } else {
                 return $this->transfer_type();
             }

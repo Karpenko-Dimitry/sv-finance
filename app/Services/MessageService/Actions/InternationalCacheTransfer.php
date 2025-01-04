@@ -8,7 +8,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 
 class InternationalCacheTransfer extends AbstractAction
 {
-    protected ?string $name = "international_cache_transfer";
+    protected ?string $name = "int_cache_transfer";
 
     /**
      * @return $this

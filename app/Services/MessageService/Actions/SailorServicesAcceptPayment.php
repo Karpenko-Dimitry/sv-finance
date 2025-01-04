@@ -9,7 +9,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 
 class SailorServicesAcceptPayment extends AbstractAction
 {
-    protected ?string $name = "sailor_services_accept_payment";
+    protected ?string $name = "sailor_accept_payment";
 
     /**
      * @return $this
@@ -366,6 +366,8 @@ class SailorServicesAcceptPayment extends AbstractAction
             [
                 ['text' => trans('telegram.button.usd'), 'callback_data' => $this->getActionKey('cart')],
                 ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('cart')],
+            ], [
+                ['text' =>  trans('telegram.button.rub'), 'callback_data' => $this->getActionKey('cart')],
                 ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('custom_recipient_currency')],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],

@@ -170,7 +170,7 @@ class MessageService
         } catch (\Throwable $exception) {
             $message = $exception->getMessage();
             $code = $exception->getCode();
-            log_debug('ERROR MessageService', compact('code', 'message'));
+            log_debug('ERROR MessageService ' . ($this->key ?? ''), compact('code', 'message'));
         }
 
         $this->callbackQuery && $this->telegram->answerCallbackQuery(['callback_query_id' => $this->callbackQuery->id]);
@@ -199,7 +199,14 @@ class MessageService
     public function sendOrEdit(int $chat_id, int $message_id, ?Keyboard $reply_markup, ?string $text = ''): void
     {
         if (!$this->callbackQuery || !$reply_markup) {
-            $this->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
+            try {
+                $this->telegram->deleteMessage(compact('chat_id', 'message_id'));
+                $this->telegram->deleteMessage(['chat_id' => $chat_id, 'message_id' => $this->lastStep->message_id ?? '']);
+            } catch (\Throwable $exception) {}
+
+            $message = $this->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
+            $this->lastStep->update(['message_id' => $message->messageId]);
+
         } else {
             $text && $this->telegram->editMessageText(compact('chat_id','message_id', 'text'));
             $this->telegram->editMessageReplyMarkup(compact('chat_id','message_id', 'reply_markup'));

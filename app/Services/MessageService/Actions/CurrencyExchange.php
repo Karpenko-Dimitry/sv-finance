@@ -239,6 +239,7 @@ class CurrencyExchange extends AbstractAction
                 return $this->cart();
             }
         }
+
         $order = $this->messageService->order->syncSteps(
             current_key: $this->getActionKey(__FUNCTION__),
             name: trans('telegram.currency_exchange.order.currency_type'),

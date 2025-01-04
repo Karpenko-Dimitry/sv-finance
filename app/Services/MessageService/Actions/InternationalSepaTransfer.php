@@ -8,7 +8,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 
 class InternationalSepaTransfer extends AbstractAction
 {
-    protected ?string $name = "international_sepa_transfer";
+    protected ?string $name = "int_sepa_transfer";
 
     /**
      * @return $this

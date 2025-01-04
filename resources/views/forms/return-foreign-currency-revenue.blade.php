@@ -127,7 +127,10 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-sm-12">
-                            <label for="task" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.task') }}</label>
+                            <label for="task" class="form-label">
+                                {{ trans('telegram.return_foreign_currency_revenue.form.label.task') }}<br>
+                                {{ trans('telegram.return_foreign_currency_revenue.form.label.task_example') }}
+                            </label>
                             {{ Form::textarea('task', null, [
                                 'class' => 'form-control',
                                 'placeholder' => trans('telegram.return_foreign_currency_revenue.form.placeholder.task'),
@@ -137,7 +140,10 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-sm-12">
-                            <label for="conditions" class="form-label">{{ trans('telegram.return_foreign_currency_revenue.form.label.conditions') }}</label>
+                            <label for="conditions" class="form-label">
+                                {{ trans('telegram.return_foreign_currency_revenue.form.label.conditions') }}<br>
+                                {{ trans('telegram.return_foreign_currency_revenue.form.label.conditions_example') }}
+                            </label>
                             {{ Form::textarea('conditions', null, [
                                 'class' => 'form-control',
                                 'placeholder' => trans('telegram.return_foreign_currency_revenue.form.placeholder.conditions'),

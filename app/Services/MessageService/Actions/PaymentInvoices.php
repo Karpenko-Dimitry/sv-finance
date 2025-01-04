@@ -2,7 +2,6 @@
 
 namespace App\Services\MessageService\Actions;
 
-use App\Models\OrderStep;
 use App\Services\MessageService\AbstractAction;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\Keyboard\Keyboard;

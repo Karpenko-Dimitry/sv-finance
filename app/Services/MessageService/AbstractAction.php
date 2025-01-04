@@ -4,7 +4,7 @@ namespace App\Services\MessageService;
 
 abstract class AbstractAction
 {
-    const PREFIX = '__prefix__';
+    const PREFIX = '_P_';
     protected ?string $name = null;
     public const DEFAULT_METHOD = 'start';
     protected int $postfix = 0;

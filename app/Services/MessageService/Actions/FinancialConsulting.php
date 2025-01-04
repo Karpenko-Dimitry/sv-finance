@@ -8,7 +8,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 
 class FinancialConsulting extends AbstractAction
 {
-    protected ?string $name = "financial_consulting";
+    protected ?string $name = "fin_consulting";
 
     /**
      * @return $this

@@ -8,7 +8,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 
 class ReturnForeignCurrencyRevenue extends AbstractAction
 {
-    protected ?string $name = "return_foreign_currency_revenue";
+    protected ?string $name = "return_foreign_revenue";
 
     /**
      * @return $this

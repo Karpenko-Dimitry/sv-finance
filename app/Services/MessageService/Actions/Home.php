@@ -36,13 +36,16 @@ class Home extends AbstractAction
                 ],
             ]
         );
+
         try {
             $this->messageService->telegram->deleteMessage(compact('message_id', 'chat_id'));
-            $this->messageService->order->steps->pluck('message_id')->unique()->each(function ($message_id) use ($chat_id) {
+        } catch (\Throwable $exception) {}
+
+        $this->messageService->order->steps->pluck('message_id')->unique()->each(function ($message_id) use ($chat_id) {
+            try {
                 $this->messageService->telegram->deleteMessage(compact('message_id', 'chat_id'));
-            });
-        } catch (\Throwable $exception) {
-        }
+            } catch (\Throwable $exception) {}
+        });
 
         $this->messageService->order->steps()->delete();
         $this->messageService->setMainKeyboard();
