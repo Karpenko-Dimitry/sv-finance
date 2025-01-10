@@ -64,6 +64,8 @@ class InternationalCacheTransferFromRf extends AbstractAction
             [
                 ['text' => trans('telegram.button.usd'), 'callback_data' => $this->getActionKey('amount')],
                 ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('amount')],
+            ], [
+                ['text' =>  trans('telegram.button.rub'), 'callback_data' => $this->getActionKey('amount')],
                 ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('custom_currency')],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -158,9 +160,12 @@ class InternationalCacheTransferFromRf extends AbstractAction
                 return $this->recipient_country();
             }
         }
+        $key = $this->messageService->lastStep->current_key;
+        $key = explode('@', $key)[1];
+        $key = explode(':', $key)[0];
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
-            trans('telegram.international_cache_transfer_from_rf.order.currency'),
+            trans('telegram.international_cache_transfer_from_rf.order.' . $key),
             $this->messageService->getSelectedOptionName()
         );
         $chat_id = $this->messageService->chatId;
@@ -231,6 +236,8 @@ class InternationalCacheTransferFromRf extends AbstractAction
             [
                 ['text' => trans('telegram.button.usd'), 'callback_data' => $this->getActionKey('cart')],
                 ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('cart')],
+            ], [
+                ['text' =>  trans('telegram.button.rub'), 'callback_data' => $this->getActionKey('cart')],
                 ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('recipient_custom_currency')],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -258,7 +265,6 @@ class InternationalCacheTransferFromRf extends AbstractAction
         $this->messageService->order->syncSteps(
             $this->getActionKey(__FUNCTION__),
             trans('telegram.international_cache_transfer_from_rf.order.recipient_country'),
-            $this->messageService->getSelectedOptionName()
         );
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
@@ -289,8 +295,7 @@ class InternationalCacheTransferFromRf extends AbstractAction
         );
         $this->messageService->order->load('steps');
 
-        $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n";
-        $text .=  $this->messageService->order->getStepsFormattedData();
+        $text = $this->messageService->order->getStepsFormattedData();
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

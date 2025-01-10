@@ -126,9 +126,9 @@ class PaymentAgencyAgreement extends AbstractAction
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
-                ['text' => trans('telegram.button.usd'), 'callback_data' => $this->getActionKey('city')],
-                ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('city')],
-                ['text' =>  trans('telegram.button.rub'), 'callback_data' => $this->getActionKey('city')],
+                ['text' => trans('telegram.button.usd'), 'callback_data' => $this->getActionKey('file')],
+                ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('file')],
+                ['text' =>  trans('telegram.button.rub'), 'callback_data' => $this->getActionKey('file')],
             ], [
                 ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('custom_currency')],
             ], [
@@ -153,7 +153,7 @@ class PaymentAgencyAgreement extends AbstractAction
             } elseif (is_numeric($this->messageService->message->text)) {
                 $validationText = trans('telegram.errors.not_alphabet');
             } else {
-                return $this->city();
+                return $this->file();
             }
         }
         $this->messageService->order->syncSteps(
@@ -325,8 +325,7 @@ class PaymentAgencyAgreement extends AbstractAction
         );
         $this->messageService->order->load('steps');
 
-        $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n\n";
-        $text .=  $this->messageService->order->getStepsFormattedData();
+        $text = $this->messageService->order->getStepsFormattedData();
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

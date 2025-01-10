@@ -257,8 +257,7 @@ class FinancialConsultingLegalize extends AbstractAction
         );
         $this->messageService->order->load('steps');
 
-        $text = trans('telegram.currency_exchange.order.order', ['number' => $this->messageService->order->id]) . "\n";
-        $text .=  $this->messageService->order->getStepsFormattedData();
+        $text = $this->messageService->order->getStepsFormattedData();
 
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [

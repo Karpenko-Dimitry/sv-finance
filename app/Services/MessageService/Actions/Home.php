@@ -37,6 +37,10 @@ class Home extends AbstractAction
             ]
         );
 
+        $this->messageService->order->steps()->delete();
+//        $this->messageService->setMainKeyboard();
+        $this->messageService->telegram->sendPhoto(compact('chat_id', 'photo', 'caption', 'reply_markup'));
+
         try {
             $this->messageService->telegram->deleteMessage(compact('message_id', 'chat_id'));
         } catch (\Throwable $exception) {}
@@ -46,10 +50,6 @@ class Home extends AbstractAction
                 $this->messageService->telegram->deleteMessage(compact('message_id', 'chat_id'));
             } catch (\Throwable $exception) {}
         });
-
-        $this->messageService->order->steps()->delete();
-        $this->messageService->setMainKeyboard();
-        $this->messageService->telegram->sendPhoto(compact('chat_id', 'photo', 'caption', 'reply_markup'));
 
         return $this;
     }
@@ -108,6 +108,7 @@ class Home extends AbstractAction
         $reply_markup = new Keyboard(['inline_keyboard' => [
             [
                 ['text' => trans('telegram.button.payment_invoices') , 'web_app' => ['url' => route('payment-invoices.create')]],
+            ], [
                 ['text' => trans('telegram.button.business_relocation'), 'callback_data' => (new BusinessRelocation())->getActionKey()],
             ], [
                 ['text' => trans('telegram.button.payment_agency_agreement'), 'callback_data' => (new PaymentAgencyAgreement())->getActionKey()],

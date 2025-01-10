@@ -51,11 +51,12 @@ class Order extends Model
     const FILE_TYPE_PHOTO = 'photo';
 
     protected $fillable = [
-        'type', 'status', 'telegram_user_id', 'file_ids', 'chat_id'
+        'type', 'status', 'telegram_user_id', 'file_ids', 'chat_id', 'number', 'checkout_at'
     ];
 
     protected $casts = [
-        'file_ids' => 'array'
+        'file_ids' => 'array',
+        'checkout_at' => 'datetime'
     ];
 
     /**
@@ -156,7 +157,11 @@ class Order extends Model
      */
     public function checkout(): static
     {
-        $this->update(['status' => self::STATUS_PROCESSING]);
+        $this->update([
+            'checkout_at' => now(),
+            'status' => self::STATUS_PROCESSING,
+            'number' => Order::whereNot('status', self::STATUS_WAITING)->max('number') + 1,
+        ]);
         return $this;
     }
 

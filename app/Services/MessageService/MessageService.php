@@ -20,7 +20,7 @@ use Telegram\Bot\Objects\User;
 
 class MessageService
 {
-    const MANAGER_URL = 'https://t.me/SuperVisor_in_Finance';
+    const MANAGER_URL = 'https://t.me/SuperVisor_Finance';
     public Api $telegram;
     public Update $response;
     protected ?CallbackQuery $callbackQuery;
@@ -216,12 +216,11 @@ class MessageService
     /**
      * @return mixed|null
      */
-    public function getSelectedOptionName(): mixed
+    public function getSelectedOptionName(?bool $onlyOption = false): mixed
     {
         $keyBoards = Arr::flatten($this->message->replyMarkup?->inline_keyboard ?? [],1);
         $keyBoard = collect($keyBoards)->where('callback_data', $this->key)->first();
-
-        return $keyBoard['text'] ?? $this->message->text ?? '';
+        return $onlyOption ? ($keyBoard['text'] ?? '') : ($keyBoard['text'] ?? $this->message->text ?? '');
     }
 
     /**
@@ -244,7 +243,7 @@ class MessageService
     public function setMainKeyboard(): static
     {
         $chat_id = $this->chatId;
-        $text = trans('telegram.message.start');
+        $text = trans('telegram.message.app_name');
         $reply_markup = new Keyboard(
             [
                 'keyboard' => [

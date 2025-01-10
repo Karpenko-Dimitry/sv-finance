@@ -19,7 +19,9 @@ class Checkout extends AbstractAction
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
         $this->messageService->order->load('steps');
-        $text = trans('telegram.checkout.order', ['number' => $this->messageService->order->id]) . "\n";
+        $this->messageService->order->checkout();
+        $text = trans('telegram.checkout.order', ['number' => $this->messageService->order->number]) . "\n";
+        $text .= trans('telegram.checkout.date', ['date' => now()->format('d-m-Y H:i')]) . "\n";
         $text .= trans('telegram.checkout.surname', ['surname' => $this->messageService->localTelegramUser->last_name]) . "\n";
         $text .= trans('telegram.checkout.name', ['name' => $this->messageService->localTelegramUser->first_name]) . "\n";
         $text .= trans('telegram.checkout.nickname', ['nickname' => $this->messageService->localTelegramUser->username]) . "\n";
@@ -57,8 +59,6 @@ class Checkout extends AbstractAction
                     }
                 }
             }
-
-            $this->messageService->order->checkout();
         }
 
         return $this;
