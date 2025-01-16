@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderStep;
 use App\Models\TelegramUser;
 use App\Services\Exceptions\AlreadyRegisteredActionException;
+use App\Services\MessageService\Actions\Checkout;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Telegram\Bot\Api;
@@ -164,6 +165,21 @@ class MessageService
         }
 
         $this->order = Order::getOrder($this->telegramUser, $this->chatId);
+
+        if ($phone = $this->message?->contact?->phoneNumber) {
+            try {
+                $chat_id = $this->chatId;
+                $message_id = $this->messageId;
+                $this->localTelegramUser?->update(compact('phone'));
+                $this->telegram->deleteMessage(compact('chat_id', 'message_id'));
+                (new Checkout())->checkout(true);
+            } catch (\Throwable $exception) {
+
+            }
+
+            return $this;
+        }
+
         $this->setLastStep();
         try {
             $this->executeMessage();
@@ -196,9 +212,9 @@ class MessageService
      * @return void
      * @throws TelegramSDKException
      */
-    public function sendOrEdit(int $chat_id, int $message_id, ?Keyboard $reply_markup, ?string $text = ''): void
+    public function sendOrEdit(int $chat_id, int $message_id, ?Keyboard $reply_markup, ?string $text = '', ?bool $forceSend = false): void
     {
-        if (!$this->callbackQuery || !$reply_markup) {
+        if (!$this->callbackQuery || !$reply_markup || $forceSend) {
             try {
                 $this->telegram->deleteMessage(compact('chat_id', 'message_id'));
                 $this->telegram->deleteMessage(['chat_id' => $chat_id, 'message_id' => $this->lastStep->message_id ?? '']);

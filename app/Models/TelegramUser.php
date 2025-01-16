@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $first_name
  * @property string|null $last_name
  * @property string|null $username
+ * @property string|null $phone
  * @property string|null $language_code
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereIsBot($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereLanguageCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereLastName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser wherePhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelegramUser whereUsername($value)
@@ -48,7 +50,7 @@ class TelegramUser extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'is_bot', 'first_name', 'last_name', 'username', 'language_code'
+        'user_id', 'is_bot', 'first_name', 'last_name', 'username', 'language_code', 'phone'
     ];
 
     protected $casts = [

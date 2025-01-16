@@ -17,12 +17,14 @@ use Telegram\Bot\Objects\User as TelegramBotUser;
  * App\Models\Order
  *
  * @property int $id
+ * @property int|null $number
  * @property int $telegram_user_id
  * @property int|null $chat_id
  * @property string|null $type
  * @property string $status
  * @property array|null $file_ids
  * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $checkout_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Collection<int, \App\Models\OrderStep> $steps
  * @property-read int|null $steps_count
@@ -30,9 +32,11 @@ use Telegram\Bot\Objects\User as TelegramBotUser;
  * @method static Builder|Order newQuery()
  * @method static Builder|Order query()
  * @method static Builder|Order whereChatId($value)
+ * @method static Builder|Order whereCheckoutAt($value)
  * @method static Builder|Order whereCreatedAt($value)
  * @method static Builder|Order whereFileIds($value)
  * @method static Builder|Order whereId($value)
+ * @method static Builder|Order whereNumber($value)
  * @method static Builder|Order whereStatus($value)
  * @method static Builder|Order whereTelegramUserId($value)
  * @method static Builder|Order whereType($value)

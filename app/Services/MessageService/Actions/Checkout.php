@@ -15,16 +15,19 @@ class Checkout extends AbstractAction
      * @return $this
      * @throws TelegramSDKException
      */
-    public function checkout(): static {
+    public function checkout(?bool $requestedContact = false): static {
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
         $this->messageService->order->load('steps');
         $this->messageService->order->checkout();
+        $nickname = $this->messageService->localTelegramUser->username;
+        $phone = $this->messageService->localTelegramUser->phone;
         $text = trans('telegram.checkout.order', ['number' => $this->messageService->order->number]) . "\n";
         $text .= trans('telegram.checkout.date', ['date' => now()->format('d-m-Y H:i')]) . "\n";
         $text .= trans('telegram.checkout.surname', ['surname' => $this->messageService->localTelegramUser->last_name]) . "\n";
         $text .= trans('telegram.checkout.name', ['name' => $this->messageService->localTelegramUser->first_name]) . "\n";
-        $text .= trans('telegram.checkout.nickname', ['nickname' => $this->messageService->localTelegramUser->username]) . "\n";
+        $text .= $nickname ? trans('telegram.checkout.nickname', compact('nickname')) . "\n" : '';
+        $text .= $phone ? trans('telegram.checkout.phone', compact('phone')) . "\n" : '';
         $caption = $text;
         $text .= $this->messageService->order->getStepsFormattedData();
         $reply_markup = new Keyboard(['inline_keyboard' => [
@@ -32,9 +35,12 @@ class Checkout extends AbstractAction
                 ['text' => trans('telegram.button.completed'), 'callback_data' => (new Checkout())->getActionKey('completed', $this->messageService->order->id)],
             ]
         ]]);
-        $this->messageService->telegram->editMessageText(compact('chat_id','message_id', 'text'));
+        !$requestedContact && $this->messageService->telegram->editMessageText(compact('chat_id','message_id', 'text'));
         $this->messageService->telegram->sendMessage(array_merge(compact('chat_id','message_id'), [
             'text' => trans('telegram.checkout.completed'),
+            'reply_markup' => json_encode([
+                'remove_keyboard' => true,
+            ]),
         ]));
 
         if ($chat_id = ChatMember::where('order_type', $this->messageService->order->type)->first()->chat_id) {

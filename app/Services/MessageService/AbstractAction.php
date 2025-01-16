@@ -2,6 +2,9 @@
 
 namespace App\Services\MessageService;
 
+use App\Services\MessageService\Actions\Checkout;
+use Telegram\Bot\Keyboard\Keyboard;
+
 abstract class AbstractAction
 {
     const PREFIX = '_P_';
@@ -39,5 +42,42 @@ abstract class AbstractAction
         $methodName = $methodName ?? self::DEFAULT_METHOD;
 
         return "$actionName@$methodName";
+    }
+
+    /**
+     * @return bool
+     */
+    public function requestContact()
+    {
+        return !$this->messageService->localTelegramUser->username && !$this->messageService->localTelegramUser->phone;
+    }
+
+    /**
+     * @return Keyboard
+     */
+    public function getCartReplyMarkup(): Keyboard
+    {
+        if ($this->requestContact()) {
+            return new Keyboard(
+                [
+                    'keyboard' => [
+                        [
+                            ['text' => trans('telegram.button.checkout'), 'request_contact' => true],
+                        ], [
+                            ['text' => trans('telegram.button.home')],
+                        ]
+                    ],
+                    'resize_keyboard' => true,
+                ]
+            );
+        } else {
+            return new Keyboard(['inline_keyboard' => [
+                [
+                    ['text' => trans('telegram.button.checkout'), 'callback_data' => (new Checkout())->getActionKey('checkout')],
+                ], [
+                    ['text' => trans('telegram.button.back'), 'callback_data' =>  $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
+                ]
+            ]]);
+        }
     }
 }

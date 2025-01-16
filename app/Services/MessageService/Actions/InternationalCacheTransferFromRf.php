@@ -66,6 +66,8 @@ class InternationalCacheTransferFromRf extends AbstractAction
                 ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('amount')],
             ], [
                 ['text' =>  trans('telegram.button.rub'), 'callback_data' => $this->getActionKey('amount')],
+                ['text' =>  trans('telegram.button.cny'), 'callback_data' => $this->getActionKey('amount')],
+            ], [
                 ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('custom_currency')],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -238,6 +240,8 @@ class InternationalCacheTransferFromRf extends AbstractAction
                 ['text' =>  trans('telegram.button.eur'), 'callback_data' => $this->getActionKey('cart')],
             ], [
                 ['text' =>  trans('telegram.button.rub'), 'callback_data' => $this->getActionKey('cart')],
+                ['text' =>  trans('telegram.button.cny'), 'callback_data' => $this->getActionKey('cart')],
+            ], [
                 ['text' =>  trans('telegram.button.custom_currency'), 'callback_data' => $this->getActionKey('recipient_custom_currency')],
             ], [
                 ['text' => trans('telegram.button.back'), 'callback_data' => $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
@@ -297,14 +301,8 @@ class InternationalCacheTransferFromRf extends AbstractAction
 
         $text = $this->messageService->order->getStepsFormattedData();
 
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.checkout'), 'callback_data' => (new Checkout())->getActionKey('checkout')],
-            ], [
-                ['text' => trans('telegram.button.back'), 'callback_data' =>  $this->messageService->getBackKey($this->getActionKey(__FUNCTION__))],
-            ]
-        ]]);
-        $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text);
+        $reply_markup = $this->getCartReplyMarkup();
+        $this->messageService->sendOrEdit($chat_id, $message_id, $reply_markup, $text, $this->requestContact());
 
         return $this;
     }

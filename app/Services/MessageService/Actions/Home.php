@@ -22,7 +22,8 @@ class Home extends AbstractAction
         $chat_id = $this->messageService->chatId;
         $message_id = $this->messageService->messageId;
         $photo = InputFile::create(public_path('assets/img/avatar-black.png'));
-        $caption = trans('telegram.message.start');
+        $text = trans('telegram.message.start');
+        $caption = trans('telegram.message.greeting');
         $reply_markup = new Keyboard(
             [
                 'inline_keyboard' => [
@@ -39,7 +40,8 @@ class Home extends AbstractAction
 
         $this->messageService->order->steps()->delete();
 //        $this->messageService->setMainKeyboard();
-        $this->messageService->telegram->sendPhoto(compact('chat_id', 'photo', 'caption', 'reply_markup'));
+        $this->messageService->telegram->sendPhoto(compact('chat_id', 'photo', 'caption'));
+        $this->messageService->telegram->sendMessage(compact('chat_id', 'text', 'reply_markup'));
 
         try {
             $this->messageService->telegram->deleteMessage(compact('message_id', 'chat_id'));
