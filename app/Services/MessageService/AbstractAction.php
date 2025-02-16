@@ -47,7 +47,7 @@ abstract class AbstractAction
     /**
      * @return bool
      */
-    public function requestContact()
+    public function requestContact(): bool
     {
         return !$this->messageService->localTelegramUser->username && !$this->messageService->localTelegramUser->phone;
     }

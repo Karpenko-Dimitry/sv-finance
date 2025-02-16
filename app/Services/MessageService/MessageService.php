@@ -114,6 +114,7 @@ class MessageService
     public function executeMessageByKey(string $key): bool
     {
         $homeAction = self::getAction('home');
+        $feedbackAction = self::getAction('feedback');
         $mapping = [
             trans('telegram.button.home') => $homeAction->getActionKey(),
             trans('telegram.button.individuals') => $homeAction->getActionKey('individuals'),
@@ -122,6 +123,7 @@ class MessageService
             '/start' =>  $homeAction->getActionKey(),
             '/individuals' =>  $homeAction->getActionKey('individuals'),
             '/legalentities' =>  $homeAction->getActionKey('legal_entities'),
+            '/feedback' =>  $feedbackAction->getActionKey('start'),
         ];
 
         $key = $mapping[$key] ?? $key;
@@ -157,7 +159,7 @@ class MessageService
      */
     public function receive(): static
     {
-        $data = $this->response->chatMember?->chat ?? $this->response->channelPost?->chat;
+        $data = $this->response->chatMember?->chat ?? $this->response->channelPost?->chat ?? $this->response->myChatMember->chat ?? null;
         ChatMember::makeNew($data?->toArray());
 
         if (!$this->telegramUser) {
@@ -209,6 +211,7 @@ class MessageService
      * @param int $message_id
      * @param Keyboard|null $reply_markup
      * @param string|null $text
+     * @param bool|null $forceSend
      * @return void
      * @throws TelegramSDKException
      */

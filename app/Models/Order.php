@@ -49,6 +49,7 @@ class Order extends Model
     const STATUS_PROCESSING = 'processing';
     const STATUS_CANCELLED = 'cancelled';
     const STATUS_COMPLETED = 'completed';
+    const TYPE_FEEDBACK = 'feedback';
     const TYPE_INDIVIDUALS = 'individuals';
     const TYPE_LEGAL_ENTITIES = 'legal_entities';
     const FILE_TYPE_DOOCUMENT = 'document';

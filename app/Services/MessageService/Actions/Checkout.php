@@ -30,20 +30,26 @@ class Checkout extends AbstractAction
         $text .= $phone ? trans('telegram.checkout.phone', compact('phone')) . "\n" : '';
         $caption = $text;
         $text .= $this->messageService->order->getStepsFormattedData();
-        $reply_markup = new Keyboard(['inline_keyboard' => [
-            [
-                ['text' => trans('telegram.button.completed'), 'callback_data' => (new Checkout())->getActionKey('completed', $this->messageService->order->id)],
-            ]
-        ]]);
+
         !$requestedContact && $this->messageService->telegram->editMessageText(compact('chat_id','message_id', 'text'));
         $this->messageService->telegram->sendMessage(array_merge(compact('chat_id','message_id'), [
             'text' => trans('telegram.checkout.completed'),
-            'reply_markup' => json_encode([
-                'remove_keyboard' => true,
-            ]),
+//            'reply_markup' => json_encode([
+//                'remove_keyboard' => true,
+//            ]),
+            'reply_markup' => new Keyboard(['inline_keyboard' => [
+                [
+                    ['text' => trans('telegram.button.feedback'), 'callback_data' => (new Feedback())->getActionKey('start')],
+                ]
+            ]])
         ]));
 
         if ($chat_id = ChatMember::where('order_type', $this->messageService->order->type)->first()->chat_id) {
+            $reply_markup = new Keyboard(['inline_keyboard' => [
+                [
+                    ['text' => trans('telegram.button.completed'), 'callback_data' => (new Checkout())->getActionKey('completed', $this->messageService->order->id)],
+                ]
+            ]]);
             $this->messageService->telegram->sendMessage([
                 'chat_id' => $chat_id,
                 'text' => $text,
