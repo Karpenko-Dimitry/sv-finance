@@ -11,6 +11,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 class Feedback extends AbstractAction
 {
     protected ?string $name = "feedback";
+    public const TYPE_ANONYMOUS = 'anonymous';
 
     /**
      * @return $this
@@ -19,18 +20,20 @@ class Feedback extends AbstractAction
     public function start(): static
     {
         if ($this->messageService->lastStep?->current_key == $this->getActionKeyWithoutPostfix(__FUNCTION__)) {
-            if (strlen($this->messageService->message->text) < 3 || strlen($this->messageService->message->text) > 200) {
-                $validationText = trans('telegram.errors.str_length');
+            if (strlen($this->messageService->message->text) < 3) {
+                $validationText = trans('telegram.errors.feedback_str_length');
             } else {
                 $this->complete();
                 return $this;
             }
         }
+        $anonymous = (int) in_array($this->messageService->getSelectedOptionKey(), ['/afeedback', self::TYPE_ANONYMOUS]);
         $order = $this->messageService->order;
         $order?->steps()->delete();
         $order?->syncSteps(
-            $this->getActionKey(__FUNCTION__),
-            trans('telegram.feedback.order.start'),
+            current_key: $this->getActionKey(__FUNCTION__),
+            name: trans('telegram.feedback.order.start'),
+            value_keys: compact('anonymous'),
         );
 
         $order?->update(['type' => Order::TYPE_FEEDBACK]);
@@ -54,9 +57,16 @@ class Feedback extends AbstractAction
      */
     public function complete(): void
     {
-        $chat_id = $this->messageService->chatId;
-        $value = $this->messageService->message->text ?? '';
         $order = $this->messageService->order;
+        $chat_id = $this->messageService->chatId;
+        $authorName = ($this->messageService->localTelegramUser->first_name ?? '') . ' ';
+        $authorName .= ($this->messageService->localTelegramUser->last_name ?? '') . ' ';
+        $authorName .= $this->messageService->localTelegramUser->username ? ('@' . $this->messageService->localTelegramUser->username) : '';
+        $value = $this->messageService->message->text ?? '';
+        $anonymous = $this->messageService->lastStep->value_keys['anonymous'] ?? 0;
+        $authorName = $anonymous ? trans('telegram.feedback.message.anonymous') : $authorName;
+        $value .= ("\n\n " . trans('telegram.feedback.message.author', ['author' => $authorName]));
+
         $order?->update(['status' => Order::STATUS_COMPLETED]);
         $order->syncSteps(
             current_key: $this->getActionKeyWithoutPostfix('start'),

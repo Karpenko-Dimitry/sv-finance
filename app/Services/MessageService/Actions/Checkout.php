@@ -39,7 +39,15 @@ class Checkout extends AbstractAction
 //            ]),
             'reply_markup' => new Keyboard(['inline_keyboard' => [
                 [
-                    ['text' => trans('telegram.button.feedback'), 'callback_data' => (new Feedback())->getActionKey('start')],
+                    [
+                        'text' => trans('telegram.button.anonymous_feedback'),
+                        'callback_data' => (new Feedback())->getActionKey('start', Feedback::TYPE_ANONYMOUS)
+                    ],
+                ], [
+                    [
+                        'text' => trans('telegram.button.feedback'),
+                        'callback_data' => (new Feedback())->getActionKey('start')
+                    ],
                 ]
             ]])
         ]));

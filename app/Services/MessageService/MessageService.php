@@ -8,6 +8,7 @@ use App\Models\OrderStep;
 use App\Models\TelegramUser;
 use App\Services\Exceptions\AlreadyRegisteredActionException;
 use App\Services\MessageService\Actions\Checkout;
+use App\Services\MessageService\Actions\Feedback;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Telegram\Bot\Api;
@@ -123,6 +124,7 @@ class MessageService
             '/start' =>  $homeAction->getActionKey(),
             '/individuals' =>  $homeAction->getActionKey('individuals'),
             '/legalentities' =>  $homeAction->getActionKey('legal_entities'),
+            '/afeedback' =>  $feedbackAction->getActionKey('start', Feedback::TYPE_ANONYMOUS),
             '/feedback' =>  $feedbackAction->getActionKey('start'),
         ];
 
@@ -243,17 +245,19 @@ class MessageService
     }
 
     /**
-     * @param string $key
-     * @return string[]|null
+     * @param string|null $key
+     * @return string|string[]|null
      */
-    public function getSelectedOptionKey(string $key): ?array
+    public function getSelectedOptionKey(?string $key = null): array|string|null
     {
         $keyBoards = Arr::flatten($this->message->replyMarkup?->inline_keyboard ?? [],1);
         $keyBoard = collect($keyBoards)->where('callback_data', $this->key)->first();
         $callbackData = $keyBoard['callback_data'] ?? '';
         $value = explode(':', $callbackData)[1] ?? $this->message->text ?? '';
 
-        return !str_starts_with($value, AbstractAction::PREFIX) ? [$key => $value] : null;
+        return !str_starts_with($value, AbstractAction::PREFIX)
+            ? ($key ? [$key => $value] : $value)
+            : null;
     }
 
     /**
